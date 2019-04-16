@@ -60,22 +60,22 @@ class DigitizingDataController extends AppController {
     public function submitdata(){
         $this->viewBuilder()->layout("blank");
         
-        $postData = filter_input_array(INPUT_GET);
+        $postData = filter_input_array(INPUT_POST);
         if(is_array($postData)){
             if(count($postData) > 0){
-//                $jsonString = file_get_contents("php://input");
-                $jsonString = "{\"FileSubmission\":[{"
-                        . "\"HeaderInfo\":{\"FinancialInstitution\":\"POST_BANK_UGANDA\",\"VslaCode\":\"VS123456\",\"PhoneImei\":\"656661478122498\",\"NetworkOperator\":\"O2\",\"NetworkType\":\"LTE\",\"PassKey\":\"123456\",\"AppVersion\":\"Version 2016112501\"},"
-                        . "\"VslaCycleInfo\":{\"CycleId\":\"1\",\"StartDate\":\"2019-03-19\",\"EndDate\":\"2020-03-18\",\"SharePrice\":\"10000.0\",\"MaxShareQty\":\"5\",\"MaxStartShare\":\"0.0\",\"InterestRate\":\"10.0\"},"
-                        . "\"MembersInfo\":[{\"MemberId\":\"1\",\"MemberNo\":\"1\",\"Surname\":\"Capito\",\"OtherNames\":\"Joseph\",\"Gender\":\"Male\",\"DateOfBirth\":\"1993-03-19\",\"Occupation\":\"Farmer\",\"PhoneNumber\":\"0781926927\",\"CyclesCompleted\":\"0\",\"IsActive\":true,\"IsArchived\":\"false\"},{\"MemberId\":\"2\",\"MemberNo\":\"2\",\"Surname\":\"Aguga\",\"OtherNames\":\"Judith\",\"Gender\":\"Female\",\"DateOfBirth\":\"1990-03-19\",\"Occupation\":\"Painter\",\"PhoneNumber\":null,\"CyclesCompleted\":\"1\",\"IsActive\":true,\"IsArchived\":\"false\"},{\"MemberId\":\"3\",\"MemberNo\":\"3\",\"Surname\":\"Kago\",\"OtherNames\":\"Cecil\",\"Gender\":\"Female\",\"DateOfBirth\":\"1999-03-19\",\"Occupation\":\"Welder\",\"PhoneNumber\":null,\"CyclesCompleted\":\"1\",\"IsActive\":true,\"IsArchived\":\"false\"}],"
-                        . "\"MeetingInfo\":{\"CycleId\":\"1\",\"MeetingId\":\"2\",\"MeetingDate\":\"2019-03-19\",\"OpeningBalanceBox\":\"0.0\",\"OpeningBalanceBank\":\"0.0\",\"Fines\":\"0.0\",\"MembersPresent\":\"3\",\"Savings\":\"150000.0\",\"LoansPaid\":\"0.0\",\"LoansIssued\":\"0.0\",\"ClosingBalanceBox\":\"0.0\",\"ClosingBalanceBank\":\"0.0\",\"IsCashBookBalanced\":\"false\",\"IsDataSent\":\"false\",\"LoanFromBank\":\"0.0\",\"BankLoanRepayment\":\"0.0\",\"AttendanceRate\":\"100.0\",\"SavingsRate\":\"100.0\",\"Welfare\":\"3000.0\",\"OutstandingWelfare\":\"0.0\"},"
-                        . "\"AttendanceInfo\":[{\"AttendanceId\":\"1\",\"MemberId\":\"1\",\"IsPresentFlag\":\"1\",\"Comments\":null},{\"AttendanceId\":\"2\",\"MemberId\":\"2\",\"IsPresentFlag\":\"1\",\"Comments\":null},{\"AttendanceId\":\"3\",\"MemberId\":\"3\",\"IsPresentFlag\":\"1\",\"Comments\":null}],"
-                        . "\"SavingInfo\":[{\"SavingId\":\"4\",\"MemberId\":\"1\",\"Amount\":\"50000.0\"},{\"SavingId\":\"5\",\"MemberId\":\"2\",\"Amount\":\"50000.0\"},{\"SavingId\":\"6\",\"MemberId\":\"3\",\"Amount\":\"50000.0\"}],"
-                        . "\"FinesInfo\":[],"
-                        . "\"RepaymentsInfo\":[],"
-                        . "\"LoansInfo\":[],"
-                        . "\"WelfareInfo\":[{\"WelfareId\":\"4\",\"MeetingId\":\"2\",\"MemberId\":\"1\",\"Amount\":\"1000.0\",\"Comment\":\"\"},{\"WelfareId\":\"5\",\"MeetingId\":\"2\",\"MemberId\":\"2\",\"Amount\":\"1000.0\",\"Comment\":\"\"},{\"WelfareId\":\"6\",\"MeetingId\":\"2\",\"MemberId\":\"3\",\"Amount\":\"1000.0\",\"Comment\":\"\"}],"
-                        . "\"OutstandingWelfareInfo\":[]}]}";
+                $jsonString = file_get_contents("php://input");
+//                $jsonString = "{\"FileSubmission\":[{"
+//                        . "\"HeaderInfo\":{\"FinancialInstitution\":\"POST_BANK_UGANDA\",\"VslaCode\":\"VS123456\",\"PhoneImei\":\"656661478122498\",\"NetworkOperator\":\"O2\",\"NetworkType\":\"LTE\",\"PassKey\":\"123456\",\"AppVersion\":\"Version 2016112501\"},"
+//                        . "\"VslaCycleInfo\":{\"CycleId\":\"1\",\"StartDate\":\"2019-03-19\",\"EndDate\":\"2020-03-18\",\"SharePrice\":\"10000.0\",\"MaxShareQty\":\"5\",\"MaxStartShare\":\"0.0\",\"InterestRate\":\"10.0\"},"
+//                        . "\"MembersInfo\":[{\"MemberId\":\"1\",\"MemberNo\":\"1\",\"Surname\":\"Capito\",\"OtherNames\":\"Joseph\",\"Gender\":\"Male\",\"DateOfBirth\":\"1993-03-19\",\"Occupation\":\"Farmer\",\"PhoneNumber\":\"0781926927\",\"CyclesCompleted\":\"0\",\"IsActive\":true,\"IsArchived\":\"false\"},{\"MemberId\":\"2\",\"MemberNo\":\"2\",\"Surname\":\"Aguga\",\"OtherNames\":\"Judith\",\"Gender\":\"Female\",\"DateOfBirth\":\"1990-03-19\",\"Occupation\":\"Painter\",\"PhoneNumber\":null,\"CyclesCompleted\":\"1\",\"IsActive\":true,\"IsArchived\":\"false\"},{\"MemberId\":\"3\",\"MemberNo\":\"3\",\"Surname\":\"Kago\",\"OtherNames\":\"Cecil\",\"Gender\":\"Female\",\"DateOfBirth\":\"1999-03-19\",\"Occupation\":\"Welder\",\"PhoneNumber\":null,\"CyclesCompleted\":\"1\",\"IsActive\":true,\"IsArchived\":\"false\"}],"
+//                        . "\"MeetingInfo\":{\"CycleId\":\"1\",\"MeetingId\":\"2\",\"MeetingDate\":\"2019-03-19\",\"OpeningBalanceBox\":\"0.0\",\"OpeningBalanceBank\":\"0.0\",\"Fines\":\"0.0\",\"MembersPresent\":\"3\",\"Savings\":\"150000.0\",\"LoansPaid\":\"0.0\",\"LoansIssued\":\"0.0\",\"ClosingBalanceBox\":\"0.0\",\"ClosingBalanceBank\":\"0.0\",\"IsCashBookBalanced\":\"false\",\"IsDataSent\":\"false\",\"LoanFromBank\":\"0.0\",\"BankLoanRepayment\":\"0.0\",\"AttendanceRate\":\"100.0\",\"SavingsRate\":\"100.0\",\"Welfare\":\"3000.0\",\"OutstandingWelfare\":\"0.0\"},"
+//                        . "\"AttendanceInfo\":[{\"AttendanceId\":\"1\",\"MemberId\":\"1\",\"IsPresentFlag\":\"1\",\"Comments\":null},{\"AttendanceId\":\"2\",\"MemberId\":\"2\",\"IsPresentFlag\":\"1\",\"Comments\":null},{\"AttendanceId\":\"3\",\"MemberId\":\"3\",\"IsPresentFlag\":\"1\",\"Comments\":null}],"
+//                        . "\"SavingInfo\":[{\"SavingId\":\"4\",\"MemberId\":\"1\",\"Amount\":\"50000.0\"},{\"SavingId\":\"5\",\"MemberId\":\"2\",\"Amount\":\"50000.0\"},{\"SavingId\":\"6\",\"MemberId\":\"3\",\"Amount\":\"50000.0\"}],"
+//                        . "\"FinesInfo\":[],"
+//                        . "\"RepaymentsInfo\":[{\"RepaymentId\":\"1\",\"MemberId\":\"1\",\"LoanId\":\"1\",\"Amount\":\"70000\",\"BalanceBefore\":\"132000\",\"BalanceAfter\":\"62000\",\"InterestAmount\":\"6200\",\"RolloverAmount\":\"68200\",\"Comments\":null,\"LastDateDue\":\"2019-04-28\",\"NextDateDue\":\"2019-04-28\"}],"
+//                        . "\"LoansInfo\":[{\"MemberId\":\"1\",\"LoanId\":\"1\",\"PrincipalAmount\":\"120000\",\"InterestAmount\":\"12000\",\"TotalRepaid\":\"0\",\"LoanBalance\":\"0\",\"DateDue\":\"2019-04-28\",\"Comments\":null,\"DateCleared\":null,\"IsCleared\":false,\"IsDefaulted\":false,\"IsWrittenOff\":false}],"
+//                        . "\"WelfareInfo\":[{\"WelfareId\":\"4\",\"MeetingId\":\"2\",\"MemberId\":\"1\",\"Amount\":\"1000.0\",\"Comment\":\"\"},{\"WelfareId\":\"5\",\"MeetingId\":\"2\",\"MemberId\":\"2\",\"Amount\":\"1000.0\",\"Comment\":\"\"},{\"WelfareId\":\"6\",\"MeetingId\":\"2\",\"MemberId\":\"3\",\"Amount\":\"1000.0\",\"Comment\":\"\"}],"
+//                        . "\"OutstandingWelfareInfo\":[]}]}";
                 
                 if(strlen($jsonString) > 0){
                     $submittedData= json_decode($jsonString, true);
@@ -121,8 +121,8 @@ class DigitizingDataController extends AppController {
                                                 LoanIssueFactory::process($fileSubmission["LoansInfo"], $fileSubmission["MeetingInfo"], $targetVsla);
                                             }
 
-                                            if(array_key_exists("RepaymentInfo", $fileSubmission)){
-                                                LoanRepaymentFactory::process($fileSubmission["RepaymentInfo"], $fileSubmission["MeetingInfo"], $targetVsla);
+                                            if(array_key_exists("RepaymentsInfo", $fileSubmission)){
+                                                LoanRepaymentFactory::process($fileSubmission["RepaymentsInfo"], $fileSubmission["MeetingInfo"], $targetVsla);
                                             }
                                             if(array_key_exists("WelfareInfo", $fileSubmission)){
                                                 WelfareFactory::process($fileSubmission["WelfareInfo"], $fileSubmission["MeetingInfo"], $targetVsla);

@@ -43,7 +43,7 @@ class LoanRepaymentFactory {
                         $loanRepayment->setMeeting($meeting);
                         
                         if(array_key_exists("LoanId", $loanRepaymentData)){
-                            $loanId = LoanIssueRepo::getIDFromLoanIdEx($meeting->getID(), $loanRepaymentData["loanId"]);
+                            $loanId = LoanIssueRepo::getIDFromLoanIdEx($meeting->getID(), $loanRepaymentData["LoanId"]);
                             $loanIssue = (new LoanIssueRepo($loanId))->getLoanIssue();
                             $loanRepayment->setLoanIssue($loanIssue);
                         }

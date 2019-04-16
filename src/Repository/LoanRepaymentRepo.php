@@ -60,7 +60,7 @@ class LoanRepaymentRepo {
     }
     
     protected function __save($loanRepayment){
-        $loanRepaymentId = $this->__getIDFromLoanRepaymentIdEx($loanRepayment->getMeeting()->getID(), $loanRepayment->getLoanIdEx());
+        $loanRepaymentId = $this->__getIDFromLoanRepaymentIdEx($loanRepayment->getMeeting()->getID(), $loanRepayment->getLoanRepaymentIdEx());
         if($loanRepaymentId != null){
             $loanRepayment->setID($loanRepaymentId);
             $this->update($loanRepayment);
@@ -83,7 +83,7 @@ class LoanRepaymentRepo {
                 . ":LoanIssue_id,"
                 . ":Meeting_id,"
                 . ":Member_id)");
-        $statement->bindValue(":RepaymentIdEx", $loanRepayment->getLoanPaymentIdEx(), PDO::PARAM_INT);
+        $statement->bindValue(":RepaymentIdEx", $loanRepayment->getLoanRepaymentIdEx(), PDO::PARAM_INT);
         $statement->bindValue(":Amount", $loanRepayment->getAmount(), PDO::PARAM_INT);
         $statement->bindValue(":BalanceAfter", $loanRepayment->getBalanceAfter(), PDO::PARAM_INT);
         $statement->bindValue(":BalanceBefore", $loanRepayment->getBalanceBefore(), PDO::PARAM_INT);
@@ -113,7 +113,7 @@ class LoanRepaymentRepo {
                 . "LoanIssue_id = :LoanIssue_id,"
                 . "Meeting_id = :Meeting_id,"
                 . "Member_id = :Member_id where id = :id");
-        $statement->bindValue(":RepaymentIdEx", $loanRepayment->getLoanPaymentIdEx(), PDO::PARAM_INT);
+        $statement->bindValue(":RepaymentIdEx", $loanRepayment->getLoanRepaymentIdEx(), PDO::PARAM_INT);
         $statement->bindValue(":Amount", $loanRepayment->getAmount(), PDO::PARAM_INT);
         $statement->bindValue(":BalanceAfter", $loanRepayment->getBalanceAfter(), PDO::PARAM_INT);
         $statement->bindValue(":BalanceBefore", $loanRepayment->getBalanceBefore(), PDO::PARAM_INT);
