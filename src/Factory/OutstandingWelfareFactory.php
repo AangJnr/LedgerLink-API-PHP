@@ -48,7 +48,7 @@ class OutstandingWelfareFactory {
                     $outstandingWelfare->setAmount($outstandingWelfareData["Amount"]);
                 }
                 if(array_key_exists("ExpectedDate", $outstandingWelfareData)){
-                    $outstandingWelfare->setOutstandingWelfareTypeId($outstandingWelfareData["ExpectedDate"]);
+                    $outstandingWelfare->setExpectedDate($outstandingWelfareData["ExpectedDate"]);
                 }
                 if(array_key_exists("DateCleared", $outstandingWelfareData)){
                     $outstandingWelfare->setDateCleared($outstandingWelfareData["DateCleared"]);
