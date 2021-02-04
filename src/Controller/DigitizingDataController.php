@@ -97,12 +97,20 @@ class DigitizingDataController extends AppController {
                             }else{
                                 $this->set("jsonData", json_encode(array_push($jsonResponse, array("StatusCode" => "1", "MeetingId" => "0"))));
                             }
+                        }else{
+                            $this->set("jsonData", json_encode(array(array("StatusCode" => "1", "MeetingId" => "0"))));
                         }
+                    }else{
+                        $this->set("jsonData", json_encode(array(array("StatusCode" => "1", "MeetingId" => "0"))));
                     }
+                }else{
+                    $this->set("jsonData", json_encode(array(array("StatusCode" => "1", "MeetingId" => "0"))));
                 }
+            }else{
+                $this->set("jsonData", json_encode(array(array("StatusCode" => "1", "MeetingId" => "0"))));
             }
         }else{
-            $this->set("jsonData", json_encode(array(array("StatusCode" => "3", "MeetingId" => "0"))));
+            $this->set("jsonData", json_encode(array(array("StatusCode" => "1", "MeetingId" => "0"))));
         }
     }
 }
