@@ -28,6 +28,7 @@ use App\Factory\WelfareFactory;
 use App\Factory\OutstandingWelfareFactory;
 use App\Repository\VslaDbActivationRepo;
 use App\Repository\VslaRepo;
+use App\Repository\DataSubmissionRepo;
 
 class DigitizingDataController extends AppController {
     //put your code here
@@ -59,6 +60,68 @@ class DigitizingDataController extends AppController {
             }
         }
         $this->set("jsonData", json_encode(array("StatusCode" => "403", "MeetingId" => "0", "Message" => "Invalid Data Type")));
+    }
+    
+    public function processSubmittedData(){
+        $this->viewBuilder()->layout("blank");
+        $numberOfUnprocessedDataSubmissions = DataSubmissionRepo::getCountOfUnProcessedDataSubmissions();
+        for($i = 0; $i < $numberOfUnprocessedDataSubmissions; $i++){
+            $dataSubmissionID = DataSubmissionRepo::getIdAtIndex($i);
+            $dataSubmissionRepo = new DataSubmissionRepo($dataSubmissionID);
+            $dataSubmission = $dataSubmissionRepo->getDataSubmission();
+            $submittedData = json_decode($dataSubmission->getData(), true);
+            if(is_array($submittedData)){
+                if(array_key_exists("HeaderInfo", $submittedData)){
+                    $headerInfo = $submittedData["HeaderInfo"];
+                    $vslaDbActivationID = VslaDbActivationFactory::authenticate($headerInfo["VslaCode"], $headerInfo["PassKey"]);
+                    if($vslaDbActivationID != null){
+                        $vslaDbActivation = (new VslaDbActivationRepo($vslaDbActivationID))->getVslaDbActivation();
+                        $targetVsla = $vslaDbActivation->getVsla();
+                        
+                        if(array_key_exists("VslaCycleInfo", $submittedData)){
+                            VslaCycleFactory::process($submittedData["VslaCycleInfo"], $targetVsla);
+                        }
+
+                        if(array_key_exists("MembersInfo", $submittedData)){
+                            MemberFactory::process($submittedData["MembersInfo"], $targetVsla);
+                        }
+                        
+                        if(array_key_exists("MeetingInfo", $submittedData)){
+                            MeetingFactory::process($submittedData["MeetingInfo"], $targetVsla);
+                        }
+                        
+                        if(array_key_exists("AttendanceInfo", $submittedData)){
+                            AttendanceFactory::process($submittedData["AttendanceInfo"], $submittedData["MeetingInfo"], $targetVsla);
+                        }
+                        
+                        if(array_key_exists("SavingInfo", $submittedData)){
+                            SavingFactory::process($submittedData["SavingInfo"], $submittedData["MeetingInfo"], $targetVsla);
+                        }
+
+                        if(array_key_exists("FinesInfo", $submittedData)){
+                            FineFactory::process($submittedData["FinesInfo"], $submittedData["MeetingInfo"], $targetVsla);
+                        }
+
+                        if(array_key_exists("LoansInfo", $submittedData)){
+                            LoanIssueFactory::process($submittedData["LoansInfo"], $submittedData["MeetingInfo"], $targetVsla);
+                        }
+
+                        if(array_key_exists("RepaymentsInfo", $submittedData)){
+                            LoanRepaymentFactory::process($submittedData["RepaymentsInfo"], $submittedData["MeetingInfo"], $targetVsla);
+                        }
+                        if(array_key_exists("WelfareInfo", $submittedData)){
+                            WelfareFactory::process($submittedData["WelfareInfo"], $submittedData["MeetingInfo"], $targetVsla);
+                        }
+
+                        if(array_key_exists("OutstandingWelfareInfo", $submittedData)){
+                            OutstandingWelfareFactory::process($submittedData["OutstandingWelfareInfo"], $submittedData["MeetingInfo"], $targetVsla);
+                        }
+                        $dataSubmissionRepo->updateProcessedFlag(true);
+                    }
+                }
+            }
+        }
+        
     }
     
     public function submitdata(){

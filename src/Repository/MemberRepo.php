@@ -33,7 +33,7 @@ class MemberRepo{
     
     protected function __load(){
         if($this->ID != null){
-            $statement = $this->db->prepare("select * from member where id = :id");
+            $statement = $this->db->prepare("select * from ledgerlink.member where id = :id");
             $statement->bindValue(":id", $this->ID, PDO::PARAM_INT);
             $statement->execute();
             $object = $statement->fetch(PDO::FETCH_ASSOC);
@@ -70,7 +70,7 @@ class MemberRepo{
     }
     
     protected function __getIDByMemberIdEx($vslaId, $memberIdEx){
-        $statement = $this->db->prepare("select id from member where MemberIdEx = :MemberIdEx and Vsla_id = :Vsla_id");
+        $statement = $this->db->prepare("select id from ledgerlink.member where MemberIdEx = :MemberIdEx and Vsla_id = :Vsla_id");
         $statement->bindValue(":MemberIdEx", $memberIdEx, PDO::PARAM_INT);
         $statement->bindValue(":Vsla_id", $vslaId, PDO::PARAM_INT);
         $statement->execute();
@@ -83,7 +83,7 @@ class MemberRepo{
     }
     
     protected function __add($member){
-        $statement = $this->db->prepare("insert into member values (0, :MemberIdEx, "
+        $statement = $this->db->prepare("insert into ledgerlink.member values (0, :MemberIdEx, "
                 . ":MemberNo, :CyclesCompleted, :Surname, :OtherNames, :Gender, :Occupation, :DateArchived,"
                 . ":DateOfBirth, :IsActive, :IsArchived, :PhoneNo, :Vsla_id)");
         $statement->bindValue(":MemberIdEx", $member->getMemberIdEx(), PDO::PARAM_INT);
@@ -104,7 +104,7 @@ class MemberRepo{
     }
     
     public function update($member){
-        $statement = $this->db->prepare("update member set MemberIdEx = :MemberIdEx, "
+        $statement = $this->db->prepare("update ledgerlink.member set MemberIdEx = :MemberIdEx, "
                 . "MemberNo = :MemberNo, "
                 . "CyclesCompleted = :CyclesCompleted, "
                 . "Surname = :Surname, "

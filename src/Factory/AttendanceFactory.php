@@ -47,6 +47,8 @@ class AttendanceFactory {
                     if($memberId != null){
                         $member = (new MemberRepo($memberId))->getMember();
                         $attendance->setMember($member);
+                    }else{
+                        
                     }
                 }
                 if(is_array($this->meetingInfo)){

@@ -71,7 +71,6 @@ class AttendanceRepo {
     }
     
     protected function __add($attendance){
-        var_dump($attendance);
         $statement = $this->db->prepare("insert into attendance values (0,"
                 . ":AttendanceIdEx,"
                 . ":Comments,"
