@@ -51,11 +51,12 @@ class VslaCycleFactory {
             }
             $this->vslaCycle->setVsla($targetVsla);
             //ToDo migrate interest is not getting captured
-            VslaCycleRepo::save($this->vslaCycle);
+            return VslaCycleRepo::save($this->vslaCycle);
         }
+        return -1;
     }
     
     public static function process($vslaCycleInfo, $targetVsla){
-        (new VslaCycleFactory($vslaCycleInfo))->__process($targetVsla);
+        return (new VslaCycleFactory($vslaCycleInfo))->__process($targetVsla);
     }
 }

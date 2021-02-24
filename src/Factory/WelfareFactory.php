@@ -32,6 +32,7 @@ class WelfareFactory {
     
     protected function __process($targetVsla){
         if(is_array($this->welfareInfo)){
+            $index = 0;
             for($i = 0; $i < count($this->welfareInfo); $i++){
                 $welfareData = $this->welfareInfo[$i];
                 $welfare = new Welfare();
@@ -60,12 +61,18 @@ class WelfareFactory {
                         }
                     }
                 }
-                WelfareRepo::save($welfare);
+                if(WelfareRepo::save($welfare) > -1){
+                    $index++;
+                }
+            }
+            if($index == count($this->welfareInfo)){
+                return 1;
             }
         }
+        return 0;
     }
     
     public static function process($welfareInfo, $meetingInfo, $targetVsla){
-        (new WelfareFactory($welfareInfo, $meetingInfo))->__process($targetVsla);
+        return (new WelfareFactory($welfareInfo, $meetingInfo))->__process($targetVsla);
     }
 }

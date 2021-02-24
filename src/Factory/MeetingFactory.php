@@ -63,13 +63,14 @@ class MeetingFactory {
                         $meeting->setBankLoanRepayment($this->meetingInfo["BankLoanRepayment"]);
                     }
                     $meeting->setDateSent(date("Y-m-d H:i:s"));
-                    MeetingRepo::save($meeting);
+                    return MeetingRepo::save($meeting);
                 }
             }
         }
+        return -1;
     }
     
     public static function process($meetingInfo, $targetVsla){
-        (new MeetingFactory($meetingInfo))->__process($targetVsla);
+        return (new MeetingFactory($meetingInfo))->__process($targetVsla);
     }
 }

@@ -38,16 +38,18 @@ class OutstandingWelfareRepo {
             $statement->bindValue(":id", $this->ID, PDO::PARAM_INT);
             $statement->execute();
             $object = $statement->fetch(PDO::FETCH_ASSOC);
-            $this->outstandingwelfare->setID($object["id"]);
-            $this->outstandingwelfare->setOutstandingWelfareIdEx($object["OutstandingWelfareIdEx"]);
-            $this->outstandingwelfare->setAmount($object["Amount"]);
-            $this->outstandingwelfare->setExpectedDate($object["ExpectedDate"]);
-            $this->outstandingwelfare->setIsCleared($object["IsCleared"]);
-            $this->outstandingwelfare->setDateCleared($object["DateCleared"]);
-            $this->outstandingwelfare->setComment($object["Comment"]);
-            $this->outstandingwelfare->setMeeting((new MeetingRepo($object["Meeting_id"]))->getMeeting());
-            $this->outstandingwelfare->setMember((new MemberRepo($object["Member_id"]))->getMember());
-            $this->outstandingwelfare->setPaidInMeeting((new MeetingRepo($object["PaidInMeeting_id"]))->getMeeting());
+            if($object != false){
+                $this->outstandingwelfare->setID($object["id"]);
+                $this->outstandingwelfare->setOutstandingWelfareIdEx($object["OutstandingWelfareIdEx"]);
+                $this->outstandingwelfare->setAmount($object["Amount"]);
+                $this->outstandingwelfare->setExpectedDate($object["ExpectedDate"]);
+                $this->outstandingwelfare->setIsCleared($object["IsCleared"]);
+                $this->outstandingwelfare->setDateCleared($object["DateCleared"]);
+                $this->outstandingwelfare->setComment($object["Comment"]);
+                $this->outstandingwelfare->setMeeting((new MeetingRepo($object["Meeting_id"]))->getMeeting());
+                $this->outstandingwelfare->setMember((new MemberRepo($object["Member_id"]))->getMember());
+                $this->outstandingwelfare->setPaidInMeeting((new MeetingRepo($object["PaidInMeeting_id"]))->getMeeting());
+            }
         }
     }
     
@@ -59,10 +61,11 @@ class OutstandingWelfareRepo {
         $outstandingwelfareId = $this->__getIDFromOutstandingWelfareIdEx($outstandingwelfare->getMeeting()->getID(), $outstandingwelfare->getOutstandingWelfareIdEx());
         if($outstandingwelfareId != null){
             $outstandingwelfare->setID($outstandingwelfareId);
-            $this->update($outstandingwelfare);
+            return $this->update($outstandingwelfare);
         }else{
-            $this->__add($outstandingwelfare);
+            return $this->__add($outstandingwelfare);
         }
+        return -1;
     }
     
     protected function __getIDFromOutstandingWelfareIdEx($MeetingId, $outstandingwelfareIdEx){
@@ -71,7 +74,7 @@ class OutstandingWelfareRepo {
         $statement->bindValue(":OutstandingWelfareIdEx", $outstandingwelfareIdEx, PDO::PARAM_INT);
         $statement->execute();
         $object = $statement->fetch(PDO::FETCH_ASSOC);
-        return count($object) == 1 ? $object["id"] : null;
+        return $object == false ? null : $object["id"];
     }
     
     protected function __add($outstandingwelfare){
@@ -87,10 +90,10 @@ class OutstandingWelfareRepo {
                 . ":PaidInMeeting_id)");
         $statement->bindValue(":OutstandingWelfareIdEx", $outstandingwelfare->getOutstandingWelfareIdEx(), PDO::PARAM_INT);
         $statement->bindValue(":Amount", $outstandingwelfare->getAmount(), PDO::PARAM_INT);
-        $statement->bindValue(":ExpectedDate", $outstandingwelfare->getExpectedDate(), PDO::PARAM_STR);
-        $statement->bindValue(":IsCleared", $outstandingwelfare->getIsCleared(), PDO::PARAM_INT);
-        $statement->bindValue(":DateCleared", $outstandingwelfare->getDateCleared(), PDO::PARAM_STR);
-        $statement->bindValue(":Comment", $outstandingwelfare->getComment(), PDO::PARAM_STR);
+        $statement->bindValue(":ExpectedDate", $outstandingwelfare->getExpectedDate() == null ? NULL : $outstandingwelfare->getExpectedDate(), PDO::PARAM_STR);
+        $statement->bindValue(":IsCleared", $outstandingwelfare->getIsCleared() == null ? 0 : $outstandingwelfare->getIsCleared(), PDO::PARAM_INT);
+        $statement->bindValue(":DateCleared", $outstandingwelfare->getDateCleared() == null ? NULL : $outstandingwelfare->getDateCleared(), PDO::PARAM_STR);
+        $statement->bindValue(":Comment", $outstandingwelfare->getComment() == null ? NULL : $outstandingwelfare->getComment(), PDO::PARAM_STR);
         $statement->bindValue(":Meeting_id", $outstandingwelfare->getMeeting()->getID(), PDO::PARAM_INT);
         $statement->bindValue(":Member_id", $outstandingwelfare->getMember()->getID(), PDO::PARAM_INT);
         $statement->bindValue(":PaidInMeeting_id", $outstandingwelfare->getPaidInMeeting()->getID(), PDO::PARAM_INT);
@@ -111,18 +114,19 @@ class OutstandingWelfareRepo {
                 . "PaidInMeeting_id = :PaidInMeeting_id where id = :id");
         $statement->bindValue(":OutstandingWelfareIdEx", $outstandingwelfare->getOutstandingWelfareIdEx(), PDO::PARAM_INT);
         $statement->bindValue(":Amount", $outstandingwelfare->getAmount(), PDO::PARAM_INT);
-        $statement->bindValue(":ExpectedDate", $outstandingwelfare->getExpectedDate(), PDO::PARAM_STR);
-        $statement->bindValue(":IsCleared", $outstandingwelfare->getIsCleared(), PDO::PARAM_INT);
-        $statement->bindValue(":DateCleared", $outstandingwelfare->getDateCleared(), PDO::PARAM_STR);
-        $statement->bindValue(":Comment", $outstandingwelfare->getComment(), PDO::PARAM_STR);
+        $statement->bindValue(":ExpectedDate", $outstandingwelfare->getExpectedDate() == null ? NULL : $outstandingwelfare->getExpectedDate(), PDO::PARAM_STR);
+        $statement->bindValue(":IsCleared", $outstandingwelfare->getIsCleared() == null ? 0 : $outstandingwelfare->getIsCleared(), PDO::PARAM_INT);
+        $statement->bindValue(":DateCleared", $outstandingwelfare->getDateCleared() == null ? NULL : $outstandingwelfare->getDateCleared(), PDO::PARAM_STR);
+        $statement->bindValue(":Comment", $outstandingwelfare->getComment() == null ? NULL : $outstandingwelfare->getComment(), PDO::PARAM_STR);
         $statement->bindValue(":Meeting_id", $outstandingwelfare->getMeeting()->getID(), PDO::PARAM_INT);
         $statement->bindValue(":Member_id", $outstandingwelfare->getMember()->getID(), PDO::PARAM_INT);
         $statement->bindValue(":PaidInMeeting_id", $outstandingwelfare->getPaidInMeeting()->getID(), PDO::PARAM_INT);
         $statement->bindValue(":id", $outstandingwelfare->getID(), PDO::PARAM_INT);
         $statement->execute();
+        return $statement->rowCount();
     }
     
     public static function save($outstandingwelfare){
-        (new OutstandingWelfareRepo())->__save($outstandingwelfare);
+        return (new OutstandingWelfareRepo())->__save($outstandingwelfare);
     }
 }

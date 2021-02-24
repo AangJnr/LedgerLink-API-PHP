@@ -32,6 +32,7 @@ class LoanIssueFactory {
     
     protected function __process($targetVsla){
         if(is_array($this->loanIssueInfo)){
+            $index = 0;
             for($i = 0; $i < count($this->loanIssueInfo); $i++){
                 $loanIssueData = $this->loanIssueInfo[$i];
                 $loanIssue = new LoanIssue();
@@ -95,12 +96,18 @@ class LoanIssueFactory {
                         $loanIssue->setMeeting($meeting);
                     }
                 }
-                LoanIssueRepo::save($loanIssue);
+                if(LoanIssueRepo::save($loanIssue) > -1){
+                    $index++;
+                }
+            }
+            if($index == count($this->loanIssueInfo)){
+                return 1;
             }
         }
+        return 0;
     }
     
     public static function process($loanIssueInfo, $meetingInfo, $targetVsla){
-        (new LoanIssueFactory($loanIssueInfo, $meetingInfo))->__process($targetVsla);
+        return (new LoanIssueFactory($loanIssueInfo, $meetingInfo))->__process($targetVsla);
     }
 }

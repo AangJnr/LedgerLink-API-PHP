@@ -39,22 +39,24 @@ class VslaCycleRepo {
             $statement->bindValue(":id", $this->ID, PDO::PARAM_INT);
             $statement->execute();
             $object = $statement->fetch(PDO::FETCH_ASSOC);
-            $this->vslaCycle->setID($object["id"]);
-            $this->vslaCycle->setCycleIdEx($object["CycleIdEx"]);
-            $this->vslaCycle->setDateEnded($object["DateEnded"]);
-            $this->vslaCycle->setEndDate($object["EndDate"]);
-            $this->vslaCycle->setCycleCode($object["CycleCode"]);
-            $this->vslaCycle->setInterestRate($object["InterestRate"]);
-            $this->vslaCycle->setIsEnded($object["IsEnded"]);
-            $this->vslaCycle->setMaxShareQuantity($object["MaxShareQuantity"]);
-            $this->vslaCycle->setMaxStartShare($object["MaxStartShare"]);
-            $this->vslaCycle->setSharedAmount($object["SharedAmount"]);
-            $this->vslaCycle->setSharePrice($object["SharePrice"]);
-            $this->vslaCycle->setShareDate($object["ShareDate"]);
-            $this->vslaCycle->setMigratedInterest($object["MigratedInterest"]);
-            $this->vslaCycle->setMigratedFines($object["MigratedFines"]);
-            $this->vslaCycle->setStartDate($object["StartDate"]);
-            $this->vslaCycle->setVsla((new VslaRepo($object["Vsla_id"]))->getVsla());
+            if($object != false){
+                $this->vslaCycle->setID($object["id"]);
+                $this->vslaCycle->setCycleIdEx($object["CycleIdEx"]);
+                $this->vslaCycle->setDateEnded($object["DateEnded"]);
+                $this->vslaCycle->setEndDate($object["EndDate"]);
+                $this->vslaCycle->setCycleCode($object["CycleCode"]);
+                $this->vslaCycle->setInterestRate($object["InterestRate"]);
+                $this->vslaCycle->setIsEnded($object["IsEnded"]);
+                $this->vslaCycle->setMaxShareQuantity($object["MaxShareQuantity"]);
+                $this->vslaCycle->setMaxStartShare($object["MaxStartShare"]);
+                $this->vslaCycle->setSharedAmount($object["SharedAmount"]);
+                $this->vslaCycle->setSharePrice($object["SharePrice"]);
+                $this->vslaCycle->setShareDate($object["ShareDate"]);
+                $this->vslaCycle->setMigratedInterest($object["MigratedInterest"]);
+                $this->vslaCycle->setMigratedFines($object["MigratedFines"]);
+                $this->vslaCycle->setStartDate($object["StartDate"]);
+                $this->vslaCycle->setVsla((new VslaRepo($object["Vsla_id"]))->getVsla());
+            }
         }
     }
     
@@ -72,26 +74,27 @@ class VslaCycleRepo {
         $statement->bindValue(":VslaId", $vslaId, PDO::PARAM_INT);
         $statement->execute();
         $object = $statement->fetch(PDO::FETCH_ASSOC);
-        return count($object) == 1 ? $object["id"] : null;
+        return $object == false ? null : $object["id"];
     }
     
     protected function __add($vslaCycle){
-        $statement = $this->db->prepare("insert into vslacycle values (0, :CycleIdEx, :DateEnded, :EndDate, :CycleCode, :InterestRate, :IsEnded, :MaxShareQuantity, :MaxStartShare, :SharedAmount, :SharePrice, :ShareDate, :MigratedInterest, :MigratedFines, :Vsla_id, :StartDate)");
+        
+        $statement = $this->db->prepare("insert into vslacycle (CycleIdEx, DateEnded, EndDate, CycleCode, InterestRate, IsEnded, MaxShareQuantity, MaxStartShare, SharedAmount, SharePrice, ShareDate, MigratedInterest, MigratedFines, Vsla_id, StartDate) values (:CycleIdEx, :DateEnded, :EndDate, :CycleCode, :InterestRate, :IsEnded, :MaxShareQuantity, :MaxStartShare, :SharedAmount, :SharePrice, :ShareDate, :MigratedInterest, :MigratedFines, :Vsla_id, :StartDate)");
         $statement->bindValue(":CycleIdEx", $vslaCycle->getCycleIdEx(), PDO::PARAM_INT);
-        $statement->bindValue(":DateEnded", $vslaCycle->getDateEnded(), PDO::PARAM_STR);
-        $statement->bindValue(":EndDate", $vslaCycle->getEndDate(), PDO::PARAM_STR);
-        $statement->bindValue(":CycleCode", $vslaCycle->getCycleCode(), PDO::PARAM_STR);
-        $statement->bindValue(":InterestRate", $vslaCycle->getInterestRate(), PDO::PARAM_INT);
-        $statement->bindValue(":IsEnded", $vslaCycle->getIsEnded(), PDO::PARAM_INT);
-        $statement->bindValue(":MaxShareQuantity", $vslaCycle->getMaxShareQuantity(), PDO::PARAM_INT);
-        $statement->bindValue(":MaxStartShare", $vslaCycle->getMaxStartShare(), PDO::PARAM_INT);
-        $statement->bindValue(":SharedAmount", $vslaCycle->getSharedAmount(), PDO::PARAM_INT);
-        $statement->bindValue(":SharePrice", $vslaCycle->getSharePrice(), PDO::PARAM_INT);
-        $statement->bindValue(":ShareDate", $vslaCycle->getShareDate(), PDO::PARAM_STR);
-        $statement->bindValue(":MigratedInterest", $vslaCycle->getMigratedInterest(), PDO::PARAM_INT);
-        $statement->bindValue(":MigratedFines", $vslaCycle->getMigratedFines(), PDO::PARAM_INT);
+        $statement->bindValue(":DateEnded", $vslaCycle->getDateEnded() == null ? NULL : $vslaCycle->getDateEnded(), PDO::PARAM_STR);
+        $statement->bindValue(":EndDate", $vslaCycle->getEndDate() == null ? NULL : $vslaCycle->getEndDate(), PDO::PARAM_STR);
+        $statement->bindValue(":CycleCode", $vslaCycle->getCycleCode() == null ? NULL : $vslaCycle->getCycleCode(), PDO::PARAM_STR);
+        $statement->bindValue(":InterestRate", $vslaCycle->getInterestRate() == null ? NULL : $vslaCycle->getInterestRate(), PDO::PARAM_INT);
+        $statement->bindValue(":IsEnded", $vslaCycle->getIsEnded() == null ? 0 : $vslaCycle->getIsEnded(), PDO::PARAM_INT);
+        $statement->bindValue(":MaxShareQuantity", $vslaCycle->getMaxShareQuantity() == null ? NULL : $vslaCycle->getMaxShareQuantity(), PDO::PARAM_INT);
+        $statement->bindValue(":MaxStartShare", $vslaCycle->getMaxStartShare() == null ? NULL : $vslaCycle->getMaxStartShare(), PDO::PARAM_INT);
+        $statement->bindValue(":SharedAmount", $vslaCycle->getSharedAmount() == null ? NULL : $vslaCycle->getSharedAmount(), PDO::PARAM_INT);
+        $statement->bindValue(":SharePrice", $vslaCycle->getSharePrice() == null ? NULL : $vslaCycle->getSharePrice(), PDO::PARAM_INT);
+        $statement->bindValue(":ShareDate", $vslaCycle->getShareDate() == null ? NULL : $vslaCycle->getShareDate(), PDO::PARAM_STR);
+        $statement->bindValue(":MigratedInterest", $vslaCycle->getMigratedInterest() == null ? NULL : $vslaCycle->getMigratedInterest(), PDO::PARAM_INT);
+        $statement->bindValue(":MigratedFines", $vslaCycle->getMigratedFines() == null ? NULL : $vslaCycle->getMigratedFines(), PDO::PARAM_INT);
         $statement->bindValue(":Vsla_id", $vslaCycle->getVsla()->getID(), PDO::PARAM_INT);
-        $statement->bindValue(":StartDate", $vslaCycle->getStartDate(), PDO::PARAM_INT);
+        $statement->bindValue(":StartDate", $vslaCycle->getStartDate() == null ? NULL : $vslaCycle->getStartDate(), PDO::PARAM_STR);        
         $statement->execute();
         return $this->db->lastInsertId();
     }
@@ -113,35 +116,37 @@ class VslaCycleRepo {
                 . "Vsla_id = :Vsla_id, "
                 . "StartDate = :StartDate where id = :id");
         $statement->bindValue(":CycleIdEx", $vslaCycle->getCycleIdEx(), PDO::PARAM_INT);
-        $statement->bindValue(":DateEnded", $vslaCycle->getDateEnded(), PDO::PARAM_STR);
-        $statement->bindValue(":EndDate", $vslaCycle->getEndDate(), PDO::PARAM_STR);
-        $statement->bindValue(":CycleCode", $vslaCycle->getCycleCode(), PDO::PARAM_STR);
-        $statement->bindValue(":InterestRate", $vslaCycle->getInterestRate(), PDO::PARAM_INT);
-        $statement->bindValue(":IsEnded", $vslaCycle->getIsEnded(), PDO::PARAM_INT);
-        $statement->bindValue(":MaxShareQuantity", $vslaCycle->getMaxShareQuantity(), PDO::PARAM_INT);
-        $statement->bindValue(":MaxStartShare", $vslaCycle->getMaxStartShare(), PDO::PARAM_INT);
-        $statement->bindValue(":SharedAmount", $vslaCycle->getSharedAmount(), PDO::PARAM_INT);
-        $statement->bindValue(":SharePrice", $vslaCycle->getSharePrice(), PDO::PARAM_INT);
-        $statement->bindValue(":ShareDate", $vslaCycle->getShareDate(), PDO::PARAM_STR);
-        $statement->bindValue(":MigratedInterest", $vslaCycle->getMigratedInterest(), PDO::PARAM_INT);
-        $statement->bindValue(":MigratedFines", $vslaCycle->getMigratedFines(), PDO::PARAM_INT);
+        $statement->bindValue(":DateEnded", $vslaCycle->getDateEnded() == null ? NULL : $vslaCycle->getDateEnded(), PDO::PARAM_STR);
+        $statement->bindValue(":EndDate", $vslaCycle->getEndDate() == null ? NULL : $vslaCycle->getEndDate(), PDO::PARAM_STR);
+        $statement->bindValue(":CycleCode", $vslaCycle->getCycleCode() == null ? NULL : $vslaCycle->getCycleCode(), PDO::PARAM_STR);
+        $statement->bindValue(":InterestRate", $vslaCycle->getInterestRate() == null ? NULL : $vslaCycle->getInterestRate(), PDO::PARAM_INT);
+        $statement->bindValue(":IsEnded", $vslaCycle->getIsEnded() == null ? 0 : $vslaCycle->getIsEnded(), PDO::PARAM_INT);
+        $statement->bindValue(":MaxShareQuantity", $vslaCycle->getMaxShareQuantity() == null ? NULL : $vslaCycle->getMaxShareQuantity(), PDO::PARAM_INT);
+        $statement->bindValue(":MaxStartShare", $vslaCycle->getMaxStartShare() == null ? NULL : $vslaCycle->getMaxStartShare(), PDO::PARAM_INT);
+        $statement->bindValue(":SharedAmount", $vslaCycle->getSharedAmount() == null ? NULL : $vslaCycle->getSharedAmount(), PDO::PARAM_INT);
+        $statement->bindValue(":SharePrice", $vslaCycle->getSharePrice() == null ? NULL : $vslaCycle->getSharePrice(), PDO::PARAM_INT);
+        $statement->bindValue(":ShareDate", $vslaCycle->getShareDate() == null ? NULL : $vslaCycle->getShareDate(), PDO::PARAM_STR);
+        $statement->bindValue(":MigratedInterest", $vslaCycle->getMigratedInterest() == null ? NULL : $vslaCycle->getMigratedInterest(), PDO::PARAM_INT);
+        $statement->bindValue(":MigratedFines", $vslaCycle->getMigratedFines() == null ? NULL : $vslaCycle->getMigratedFines(), PDO::PARAM_INT);
         $statement->bindValue(":Vsla_id", $vslaCycle->getVsla()->getID(), PDO::PARAM_INT);
-        $statement->bindValue(":StartDate", $vslaCycle->getStartDate(), PDO::PARAM_INT);
+        $statement->bindValue(":StartDate", $vslaCycle->getStartDate() == null ? NULL : $vslaCycle->getStartDate(), PDO::PARAM_STR);
         $statement->bindValue(":id", $vslaCycle->getID(), PDO::PARAM_INT);
         $statement->execute();
+        return $statement->rowCount();
     }
     
     protected function __save($vslaCycle){
         $cycleID = $this->__getIDByCycleIdEx($vslaCycle->getVsla()->getID(), $vslaCycle->getCycleIdEx());
         if($cycleID != null){
             $vslaCycle->setID($cycleID);
-            $this->update($vslaCycle);
+            return $this->update($vslaCycle);
         }else{
-            $this->__add($vslaCycle);
-        }    
+            return $this->__add($vslaCycle);
+        }   
+        return -1;
     }
     
     public static function save($vslaCycle){
-        (new VslaCycleRepo())->__save($vslaCycle);
+        return (new VslaCycleRepo())->__save($vslaCycle);
     }
 }

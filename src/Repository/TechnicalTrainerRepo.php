@@ -37,17 +37,19 @@ class TechnicalTrainerRepo {
             $statement->bindValue(":id", $this->ID, PDO::PARAM_INT);
             $statement->execute();
             $object = $statement->fetch(PDO::FETCH_ASSOC);
-            $this->technicalTrainer->setID($object["id"]);
-            $this->technicalTrainer->setPhoneNumber($object["PhoneNumber"]);
-            $this->technicalTrainer->setEmail($object["Email"]);
-            $this->technicalTrainer->setStatus($object["Status"]);
-            $this->technicalTrainer->setFirstName($object["FirstName"]);
-            $this->technicalTrainer->setLastName($object["LastName"]);
-            $this->technicalTrainer->setUsername($object["Username"]);
-            $this->technicalTrainer->setPassKey($object["PassKey"]);
-            
-            $vslaRegion = (new VslaRegionRepo($object["Region_id"]))->getVslaRegion();
-            $this->technicalTrainer->setVslaRegion($vslaRegion);
+            if($object != false){
+                $this->technicalTrainer->setID($object["id"]);
+                $this->technicalTrainer->setPhoneNumber($object["PhoneNumber"]);
+                $this->technicalTrainer->setEmail($object["Email"]);
+                $this->technicalTrainer->setStatus($object["Status"]);
+                $this->technicalTrainer->setFirstName($object["FirstName"]);
+                $this->technicalTrainer->setLastName($object["LastName"]);
+                $this->technicalTrainer->setUsername($object["Username"]);
+                $this->technicalTrainer->setPassKey($object["PassKey"]);
+
+                $vslaRegion = (new VslaRegionRepo($object["Region_id"]))->getVslaRegion();
+                $this->technicalTrainer->setVslaRegion($vslaRegion);
+            }
         }
     }
     

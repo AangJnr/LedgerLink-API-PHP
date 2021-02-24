@@ -31,6 +31,7 @@ class SavingFactory {
     
     protected function __process($targetVsla){
         if(is_array($this->savingInfo)){
+            $index = 0;
             for($i = 0; $i < count($this->savingInfo); $i++){
                 $savingData = $this->savingInfo[$i];
                 $saving = new Saving();
@@ -59,12 +60,18 @@ class SavingFactory {
                         }
                     }
                 }
-                SavingRepo::save($saving);
+                if(SavingRepo::save($saving) > -1){
+                    $index++;
+                }
+            }
+            if($index == count($this->savingInfo)){
+                return 1;
             }
         }
+        return 0;
     }
     
     public static function process($savingInfo, $meetingInfo, $targetVsla){
-        (new SavingFactory($savingInfo, $meetingInfo))->__process($targetVsla);
+        return (new SavingFactory($savingInfo, $meetingInfo))->__process($targetVsla);
     }
 }

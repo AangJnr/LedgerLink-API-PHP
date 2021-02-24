@@ -34,16 +34,20 @@ class AttendanceRepo {
     
     protected function __load(){
         if($this->ID != null){
-            $statement = $this->db->prepare("select * from attendance where id = :id");
-            $statement->bindValue(":id", $this->ID, PDO::PARAM_INT);
-            $statement->execute();
-            $object = $statement->fetch(PDO::FETCH_ASSOC);
-            $this->attendance->setID($object["id"]);
-            $this->attendance->setAttendanceIdEx($object["AttendanceIdEx"]);
-            $this->attendance->setComments($object["Comments"]);
-            $this->attendance->setIsPresent($object["IsPresent"]);
-            $this->attendance->setMeeting((new MeetingRepo($object["Meeting_id"]))->getMeeting());
-            $this->attendance->setMember((new MemberRepo($object["Member_id"]))->getMember());
+            if($this->db != null){
+                $statement = $this->db->prepare("select * from attendance where id = :id");
+                $statement->bindValue(":id", $this->ID, PDO::PARAM_INT);
+                $statement->execute();
+                $object = $statement->fetch(PDO::FETCH_ASSOC);
+                if($object != false){
+                    $this->attendance->setID($object["id"]);
+                    $this->attendance->setAttendanceIdEx($object["AttendanceIdEx"]);
+                    $this->attendance->setComments($object["Comments"]);
+                    $this->attendance->setIsPresent($object["IsPresent"]);
+                    $this->attendance->setMeeting((new MeetingRepo($object["Meeting_id"]))->getMeeting());
+                    $this->attendance->setMember((new MemberRepo($object["Member_id"]))->getMember());
+                }
+            }
         }
     }
     
@@ -52,13 +56,16 @@ class AttendanceRepo {
     }
     
     protected function __save($attendance){
-        $attendanceId = $this->__getIDFromAttendanceIdEx($attendance->getMeeting()->getID(), $attendance->getAttendanceIdEx());
-        if($attendanceId != null){
-            $attendance->setID($attendanceId);
-            $this->update($attendance);
-        }else{
-            $this->__add($attendance);
+        if($attendance != null){
+            $attendanceId = $this->__getIDFromAttendanceIdEx($attendance->getMeeting()->getID(), $attendance->getAttendanceIdEx());
+            if($attendanceId != null){
+                $attendance->setID($attendanceId);
+                return $this->update($attendance);
+            }else{
+                return $this->__add($attendance);
+            }
         }
+        return -1;
     }
     
     protected function __getIDFromAttendanceIdEx($meetingId, $attendanceIdEx){
@@ -67,7 +74,7 @@ class AttendanceRepo {
         $statement->bindValue(":AttendanceIdEx", $attendanceIdEx, PDO::PARAM_INT);
         $statement->execute();
         $object = $statement->fetch(PDO::FETCH_ASSOC);
-        return count($object) == 1 ? $object["id"] : null;
+        return $object == false ? null : $object["id"];
     }
     
     protected function __add($attendance){
@@ -78,11 +85,15 @@ class AttendanceRepo {
                 . ":Meeting_id,"
                 . ":Member_id)");
         $statement->bindValue(":AttendanceIdEx", $attendance->getAttendanceIdEx(), PDO::PARAM_INT);
-        $statement->bindValue(":Comments", $attendance->getComments(), PDO::PARAM_INT);
-        $statement->bindValue(":IsPresent", $attendance->getIsPresent(), PDO::PARAM_INT);
+        $statement->bindValue(":Comments", $attendance->getComments() == null ? NULL : $attendance->getComments(), PDO::PARAM_INT);
+        $statement->bindValue(":IsPresent", $attendance->getIsPresent() == null ? NULL : $attendance->getIsPresent(), PDO::PARAM_INT);
         $statement->bindValue(":Meeting_id", $attendance->getMeeting()->getID(), PDO::PARAM_INT);
         $statement->bindValue(":Member_id", $attendance->getMember()->getID(), PDO::PARAM_INT);
-        $statement->execute();
+        try{
+            $statement->execute();
+        }catch(Exception $e){
+            var_dump($e->getMessage());
+        }
         return $this->db->lastInsertId();
     }
     
@@ -94,15 +105,16 @@ class AttendanceRepo {
                 . "Meeting_id = :Meeting_id,"
                 . "Member_id = :Member_id where id = :id");
         $statement->bindValue(":AttendanceIdEx", $attendance->getAttendanceIdEx(), PDO::PARAM_INT);
-        $statement->bindValue(":Comments", $attendance->getComments(), PDO::PARAM_INT);
-        $statement->bindValue(":IsPresent", $attendance->getIsPresent(), PDO::PARAM_INT);
+        $statement->bindValue(":Comments", $attendance->getComments() == null ? NULL : $attendance->getComments(), PDO::PARAM_INT);
+        $statement->bindValue(":IsPresent", $attendance->getIsPresent() == null ? NULL : $attendance->getIsPresent(), PDO::PARAM_INT);
         $statement->bindValue(":Meeting_id", $attendance->getMeeting()->getID(), PDO::PARAM_INT);
         $statement->bindValue(":Member_id", $attendance->getMember()->getID(), PDO::PARAM_INT);
         $statement->bindValue(":id", $attendance->getID(), PDO::PARAM_INT);
         $statement->execute();
+        return $statement->rowCount();
     }
     
     public static function save($attendance){
-        (new AttendanceRepo())->__save($attendance);
+        return (new AttendanceRepo())->__save($attendance);
     }
 }

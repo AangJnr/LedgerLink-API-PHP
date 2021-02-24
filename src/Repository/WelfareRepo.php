@@ -40,11 +40,13 @@ class WelfareRepo {
             $statement->bindValue(":id", $this->ID, PDO::PARAM_INT);
             $statement->execute();
             $object = $statement->fetch(PDO::FETCH_ASSOC);
-            $this->welfare->setID($object["id"]);
-            $this->welfare->setWelfareIdEx($object["WelfareIdEx"]);
-            $this->welfare->setAmount($object["Amount"]);
-            $this->welfare->setMeeting((new MeetingRepo($object["Meeting_id"]))->getMeeting());
-            $this->welfare->setMember((new MemberRepo($object["Member_id"]))->getMember());
+            if($object != false){
+                $this->welfare->setID($object["id"]);
+                $this->welfare->setWelfareIdEx($object["WelfareIdEx"]);
+                $this->welfare->setAmount($object["Amount"]);
+                $this->welfare->setMeeting((new MeetingRepo($object["Meeting_id"]))->getMeeting());
+                $this->welfare->setMember((new MemberRepo($object["Member_id"]))->getMember());
+            }
         }
     }
     
@@ -60,6 +62,7 @@ class WelfareRepo {
         }else{
             return $this->__add($welfare);
         }
+        return -1;
     }
     
     protected function __getIDFromWelfareIdEx($meetingId, $welfareIdEx){
@@ -68,7 +71,7 @@ class WelfareRepo {
         $statement->bindValue(":WelfareIdEx", $welfareIdEx, PDO::PARAM_INT);
         $statement->execute();
         $object = $statement->fetch(PDO::FETCH_ASSOC);
-        return count($object) == 1 ? $object["id"] : null;
+        return $object == false ? null : $object["id"];
     }
     
     protected function __add($welfare){
@@ -79,8 +82,8 @@ class WelfareRepo {
                 . ":Meeting_id,"
                 . ":Member_id)");
         $statement->bindValue(":WelfareIdEx", $welfare->getWelfareIdEx(), PDO::PARAM_INT);
-        $statement->bindValue(":Amount", $welfare->getAmount(), PDO::PARAM_INT);
-        $statement->bindValue(":Comment", $welfare->getComment(), PDO::PARAM_STR);
+        $statement->bindValue(":Amount", $welfare->getAmount() == null ? 0 : $welfare->getAmount(), PDO::PARAM_INT);
+        $statement->bindValue(":Comment", $welfare->getComment() == null ? NULL : $welfare->getComment(), PDO::PARAM_STR);
         $statement->bindValue(":Meeting_id", $welfare->getMeeting()->getID(), PDO::PARAM_INT);
         $statement->bindValue(":Member_id", $welfare->getMember()->getID(), PDO::PARAM_INT);
         $statement->execute();
@@ -95,8 +98,8 @@ class WelfareRepo {
                 . "Meeting_id = :Meeting_id,"
                 . "Member_id = :Member_id where id = :id");
         $statement->bindValue(":WelfareIdEx", $welfare->getWelfareIdEx(), PDO::PARAM_INT);
-        $statement->bindValue(":Amount", $welfare->getAmount(), PDO::PARAM_INT);
-        $statement->bindValue(":Comment", $welfare->getComment(), PDO::PARAM_STR);
+        $statement->bindValue(":Amount", $welfare->getAmount() == null ? 0 : $welfare->getAmount(), PDO::PARAM_INT);
+        $statement->bindValue(":Comment", $welfare->getComment() == null ? NULL : $welfare->getComment(), PDO::PARAM_STR);
         $statement->bindValue(":Meeting_id", $welfare->getMeeting()->getID(), PDO::PARAM_INT);
         $statement->bindValue(":Member_id", $welfare->getMember()->getID(), PDO::PARAM_INT);
         $statement->bindValue(":id", $welfare->getID(), PDO::PARAM_INT);

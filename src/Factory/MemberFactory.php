@@ -27,6 +27,7 @@ class MemberFactory {
     
     protected function __process($targetVsla){
         if(is_array($this->memberInfo)){
+            $index = 0;
             for($i = 0; $i < count($this->memberInfo); $i++){
                 $member = new Member();
                 $memberData = $this->memberInfo[$i];
@@ -72,12 +73,18 @@ class MemberFactory {
                     }
                 }
                 $member->setVsla($targetVsla);
-                MemberRepo::save($member);
+                if(MemberRepo::save($member) > -1){
+                    $index++;
+                }
+            }
+            if($index == count($this->memberInfo)){
+                return 1;
             }
         }
+        return -1;
     }
     
     public static function process($memberInfo, $targetVsla){
-        (new MemberFactory($memberInfo))->__process($targetVsla);
+        return (new MemberFactory($memberInfo))->__process($targetVsla);
     }
 }

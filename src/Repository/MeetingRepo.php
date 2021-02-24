@@ -37,25 +37,27 @@ class MeetingRepo {
             $statement->bindValue(":id", $this->ID, PDO::PARAM_INT);
             $statement->execute();
             $object = $statement->fetch(PDO::FETCH_ASSOC);
-            $this->meeting->setID($object["id"]);
-            $this->meeting->setMeetingIdEx($object["MeetingIdEx"]);
-            $this->meeting->setCashExpenses($object["CashExpenses"]);
-            $this->meeting->setCashFines($object["CashFines"]);
-            $this->meeting->setCashFromBox($object["CashFromBox"]);
-            $this->meeting->setCashSavedBank($object["CashSavedBank"]);
-            $this->meeting->setCashSavedBox($object["CashSavedBox"]);
-            $this->meeting->setCashWelfare($object["CashWelfare"]);
-            $this->meeting->setDateSent($object["DateSent"]);
-            $this->meeting->setIsCurrent($object["IsCurrent"]);
-            $this->meeting->setIsDataSent($object["IsDataSent"]);
-            $this->meeting->setMeetingDate($object["MeetingDate"]);
-            $this->meeting->setCountOfMembersPresent($object["CountOfMembersPresent"]);
-            $this->meeting->setSumOfSavings($object["SumOfSavings"]);
-            $this->meeting->setSumOfLoanIssues($object["SumOfLoanIssues"]);
-            $this->meeting->setSumOfLoanRepayments($object["SumOfLoanRepayments"]);
-            $this->meeting->setLoanFromBank($object["LoanFromBank"]);
-            $this->meeting->setBankLoanRepayment($object["BankLoanRepayment"]);
-            $this->meeting->setVslaCycle((new VslaCycleRepo($object["VslaCycle_id"]))->getVslaCycle());
+            if($object != false){
+                $this->meeting->setID($object["id"]);
+                $this->meeting->setMeetingIdEx($object["MeetingIdEx"]);
+                $this->meeting->setCashExpenses($object["CashExpenses"]);
+                $this->meeting->setCashFines($object["CashFines"]);
+                $this->meeting->setCashFromBox($object["CashFromBox"]);
+                $this->meeting->setCashSavedBank($object["CashSavedBank"]);
+                $this->meeting->setCashSavedBox($object["CashSavedBox"]);
+                $this->meeting->setCashWelfare($object["CashWelfare"]);
+                $this->meeting->setDateSent($object["DateSent"]);
+                $this->meeting->setIsCurrent($object["IsCurrent"]);
+                $this->meeting->setIsDataSent($object["IsDataSent"]);
+                $this->meeting->setMeetingDate($object["MeetingDate"]);
+                $this->meeting->setCountOfMembersPresent($object["CountOfMembersPresent"]);
+                $this->meeting->setSumOfSavings($object["SumOfSavings"]);
+                $this->meeting->setSumOfLoanIssues($object["SumOfLoanIssues"]);
+                $this->meeting->setSumOfLoanRepayments($object["SumOfLoanRepayments"]);
+                $this->meeting->setLoanFromBank($object["LoanFromBank"]);
+                $this->meeting->setBankLoanRepayment($object["BankLoanRepayment"]);
+                $this->meeting->setVslaCycle((new VslaCycleRepo($object["VslaCycle_id"]))->getVslaCycle());
+            }
         }
     }
     
@@ -67,10 +69,11 @@ class MeetingRepo {
         $meetingId = $this->__getIDByMeetingIdEx($meeting->getVslaCycle()->getID(), $meeting->getMeetingIdEx());
         if($meetingId != null){
             $meeting->setID($meetingId);
-            $this->update($meeting);
+            return $this->update($meeting);
         }else{
-            $this->__add($meeting);
+            return $this->__add($meeting);
         }
+        return -1;
     }
     
     protected function __getIDByMeetingIdEx($vslaCycleId, $meetingIdEx){
@@ -79,7 +82,7 @@ class MeetingRepo {
         $statement->bindValue(":MeetingIdEx", $meetingIdEx, PDO::PARAM_INT);
         $statement->execute();
         $object = $statement->fetch(PDO::FETCH_ASSOC);
-        return count($object) == 1 ? $object["id"] : null;
+        return $object == false ? null : $object["id"];
     }
     
     public static function getIDByMeetingIDEx($vslaCycleId, $meetingIdEx){
@@ -107,22 +110,22 @@ class MeetingRepo {
                 . ":BankLoanRepayment,"
                 . ":VslaCycle_id)");
         $statement->bindValue(":MeetingIdEx", $meeting->getMeetingIdEx(),PDO::PARAM_INT);
-        $statement->bindValue(":CashExpenses", $meeting->getCashExpenses(),PDO::PARAM_INT);
-        $statement->bindValue(":CashFines", $meeting->getCashFines(),PDO::PARAM_INT);
-        $statement->bindValue(":CashFromBox", $meeting->getCashFromBox(),PDO::PARAM_INT);
-        $statement->bindValue(":CashSavedBank", $meeting->getCashSavedBank(),PDO::PARAM_INT);
-        $statement->bindValue(":CashSavedBox", $meeting->getCashSavedBox(),PDO::PARAM_INT);
-        $statement->bindValue(":CashWelfare", $meeting->getCashWelfare(),PDO::PARAM_INT);
-        $statement->bindValue(":DateSent", $meeting->getDateSent(),PDO::PARAM_STR);
-        $statement->bindValue(":IsCurrent", $meeting->getIsCurrent(),PDO::PARAM_INT);
-        $statement->bindValue(":IsDataSent", $meeting->getIsDataSent(),PDO::PARAM_INT);
-        $statement->bindValue(":MeetingDate", $meeting->getMeetingDate(),PDO::PARAM_STR);
-        $statement->bindValue(":CountOfMembersPresent", $meeting->getCountOfMembersPresent(),PDO::PARAM_INT);
-        $statement->bindValue(":SumOfSavings", $meeting->getSumOfSavings(),PDO::PARAM_INT);
-        $statement->bindValue(":SumOfLoanIssues", $meeting->getSumOfLoanIssues(),PDO::PARAM_INT);
-        $statement->bindValue(":SumOfLoanRepayments", $meeting->getSumOfLoanRepayments(),PDO::PARAM_INT);
-        $statement->bindValue(":LoanFromBank", $meeting->getLoanFromBank(),PDO::PARAM_INT);
-        $statement->bindValue(":BankLoanRepayment", $meeting->getBankLoanRepayment(),PDO::PARAM_INT);
+        $statement->bindValue(":CashExpenses", $meeting->getCashExpenses() == null ? 0 : $meeting->getCashExpenses(),PDO::PARAM_INT);
+        $statement->bindValue(":CashFines", $meeting->getCashFines() == null ? 0 : $meeting->getCashFines(),PDO::PARAM_INT);
+        $statement->bindValue(":CashFromBox", $meeting->getCashFromBox() == null ? 0 : $meeting->getCashFromBox(),PDO::PARAM_INT);
+        $statement->bindValue(":CashSavedBank", $meeting->getCashSavedBank() == null ? 0 : $meeting->getCashSavedBank(),PDO::PARAM_INT);
+        $statement->bindValue(":CashSavedBox", $meeting->getCashSavedBox() == null ? 0 : $meeting->getCashSavedBox(),PDO::PARAM_INT);
+        $statement->bindValue(":CashWelfare", $meeting->getCashWelfare() == null ? 0 : $meeting->getCashWelfare(),PDO::PARAM_INT);
+        $statement->bindValue(":DateSent", $meeting->getDateSent() == null ? NULL : $meeting->getDateSent(),PDO::PARAM_STR);
+        $statement->bindValue(":IsCurrent", $meeting->getIsCurrent() == null ? 0 : $meeting->getIsCurrent(),PDO::PARAM_INT);
+        $statement->bindValue(":IsDataSent", $meeting->getIsDataSent() == null ? 1 : $meeting->getIsDataSent(),PDO::PARAM_INT);
+        $statement->bindValue(":MeetingDate", $meeting->getMeetingDate() == null ? NULL : $meeting->getMeetingDate(),PDO::PARAM_STR);
+        $statement->bindValue(":CountOfMembersPresent", $meeting->getCountOfMembersPresent() == null ? 0: $meeting->getCountOfMembersPresent(),PDO::PARAM_INT);
+        $statement->bindValue(":SumOfSavings", $meeting->getSumOfSavings() == null ? 0 : $meeting->getSumOfSavings(),PDO::PARAM_INT);
+        $statement->bindValue(":SumOfLoanIssues", $meeting->getSumOfLoanIssues() == null ? 0 : $meeting->getSumOfLoanIssues(),PDO::PARAM_INT);
+        $statement->bindValue(":SumOfLoanRepayments", $meeting->getSumOfLoanRepayments() == null ? 0 : $meeting->getSumOfLoanRepayments(),PDO::PARAM_INT);
+        $statement->bindValue(":LoanFromBank", $meeting->getLoanFromBank() == null ? 0 : $meeting->getLoanFromBank(),PDO::PARAM_INT);
+        $statement->bindValue(":BankLoanRepayment", $meeting->getBankLoanRepayment() == null ? 0 : $meeting->getBankLoanRepayment(),PDO::PARAM_INT);
         $statement->bindValue(":VslaCycle_id", $meeting->getVslaCycle()->getID(),PDO::PARAM_INT);
         $statement->execute();
         return $this->db->lastInsertId();
@@ -134,6 +137,7 @@ class MeetingRepo {
                 . "CashExpenses = :CashExpenses,"
                 . "CashFines = :CashFines,"
                 . "CashFromBox = :CashFromBox,"
+                . "CashSavedBank = :CashSavedBank,"
                 . "CashSavedBox = :CashSavedBox,"
                 . "CashWelfare = :CashWelfare,"
                 . "DateSent = :DateSent,"
@@ -146,29 +150,32 @@ class MeetingRepo {
                 . "SumOfLoanRepayments = :SumOfLoanRepayments,"
                 . "LoanFromBank = :LoanFromBank,"
                 . "BankLoanRepayment = :BankLoanRepayment,"
-                . "VslaCycle_id = :VslaCycle_id where id = :id");
+                . "VslaCycle_id = :VslaCycle_id where "
+                . "id = :id");
         $statement->bindValue(":MeetingIdEx", $meeting->getMeetingIdEx(),PDO::PARAM_INT);
-        $statement->bindValue(":CashExpenses", $meeting->getCashExpenses(),PDO::PARAM_INT);
-        $statement->bindValue(":CashFines", $meeting->getCashFines(),PDO::PARAM_INT);
-        $statement->bindValue(":CashFromBox", $meeting->getCashFromBox(),PDO::PARAM_INT);
-        $statement->bindValue(":CashSavedBox", $meeting->getCashSavedBox(),PDO::PARAM_INT);
-        $statement->bindValue(":CashWelfare", $meeting->getCashWelfare(),PDO::PARAM_INT);
-        $statement->bindValue(":DateSent", $meeting->getDateSent(),PDO::PARAM_STR);
-        $statement->bindValue(":IsCurrent", $meeting->getIsCurrent(),PDO::PARAM_INT);
-        $statement->bindValue(":IsDataSent", $meeting->getIsDataSent(),PDO::PARAM_INT);
-        $statement->bindValue(":MeetingDate", $meeting->getMeetingDate(),PDO::PARAM_STR);
-        $statement->bindValue(":CountOfMembersPresent", $meeting->getCountOfMembersPresent(),PDO::PARAM_INT);
-        $statement->bindValue(":SumOfSavings", $meeting->getSumOfSavings(),PDO::PARAM_INT);
-        $statement->bindValue(":SumOfLoanIssues", $meeting->getSumOfLoanIssues(),PDO::PARAM_INT);
-        $statement->bindValue(":SumOfLoanRepayments", $meeting->getSumOfLoanRepayments(),PDO::PARAM_INT);
-        $statement->bindValue(":LoanFromBank", $meeting->getLoanFromBank(),PDO::PARAM_INT);
-        $statement->bindValue(":BankLoanRepayment", $meeting->getBankLoanRepayment(),PDO::PARAM_INT);
+        $statement->bindValue(":CashExpenses", $meeting->getCashExpenses() == null ? 0 : $meeting->getCashExpenses(),PDO::PARAM_INT);
+        $statement->bindValue(":CashFines", $meeting->getCashFines() == null ? 0 : $meeting->getCashFines(),PDO::PARAM_INT);
+        $statement->bindValue(":CashFromBox", $meeting->getCashFromBox() == null ? 0 : $meeting->getCashFromBox(),PDO::PARAM_INT);
+        $statement->bindValue(":CashSavedBank", $meeting->getCashSavedBank() == null ? 0 : $meeting->getCashSavedBank(),PDO::PARAM_INT);
+        $statement->bindValue(":CashSavedBox", $meeting->getCashSavedBox() == null ? 0 : $meeting->getCashSavedBox(),PDO::PARAM_INT);
+        $statement->bindValue(":CashWelfare", $meeting->getCashWelfare() == null ? 0 : $meeting->getCashWelfare(),PDO::PARAM_INT);
+        $statement->bindValue(":DateSent", $meeting->getDateSent() == null ? NULL : $meeting->getDateSent(),PDO::PARAM_STR);
+        $statement->bindValue(":IsCurrent", $meeting->getIsCurrent() == null ? 0 : $meeting->getIsCurrent(),PDO::PARAM_INT);
+        $statement->bindValue(":IsDataSent", $meeting->getIsDataSent() == null ? 1 : $meeting->getIsDataSent(),PDO::PARAM_INT);
+        $statement->bindValue(":MeetingDate", $meeting->getMeetingDate() == null ? NULL : $meeting->getMeetingDate(),PDO::PARAM_STR);
+        $statement->bindValue(":CountOfMembersPresent", $meeting->getCountOfMembersPresent() == null ? 0: $meeting->getCountOfMembersPresent(),PDO::PARAM_INT);
+        $statement->bindValue(":SumOfSavings", $meeting->getSumOfSavings() == null ? 0 : $meeting->getSumOfSavings(),PDO::PARAM_INT);
+        $statement->bindValue(":SumOfLoanIssues", $meeting->getSumOfLoanIssues() == null ? 0 : $meeting->getSumOfLoanIssues(),PDO::PARAM_INT);
+        $statement->bindValue(":SumOfLoanRepayments", $meeting->getSumOfLoanRepayments() == null ? 0 : $meeting->getSumOfLoanRepayments(),PDO::PARAM_INT);
+        $statement->bindValue(":LoanFromBank", $meeting->getLoanFromBank() == null ? 0 : $meeting->getLoanFromBank(),PDO::PARAM_INT);
+        $statement->bindValue(":BankLoanRepayment", $meeting->getBankLoanRepayment() == null ? 0 : $meeting->getBankLoanRepayment(),PDO::PARAM_INT);
         $statement->bindValue(":VslaCycle_id", $meeting->getVslaCycle()->getID(),PDO::PARAM_INT);
         $statement->bindValue(":id", $meeting->getID(), PDO::PARAM_INT);
         $statement->execute();
+        return $statement->rowCount();
     }
     
     public static function save($meeting){
-        (new MeetingRepo())->__save($meeting);
+        return (new MeetingRepo())->__save($meeting);
     }
 }

@@ -39,19 +39,21 @@ class LoanRepaymentRepo {
             $statement->bindValue(":id", $this->ID, PDO::PARAM_INT);
             $statement->execute();
             $object = $statement->fetch(PDO::FETCH_ASSOC);
-            $this->loanRepayment->setID($object["id"]);
-            $this->loanRepayment->setLoanRepaymentIdEx($object["RepaymentIdEx"]);
-            $this->loanRepayment->setAmount($object["Amount"]);
-            $this->loanRepayment->setBalanceAfter($object["BalanceAfter"]);
-            $this->loanRepayment->setBalanceBefore($object["BalanceBefore"]);
-            $this->loanRepayment->setComments($object["Comments"]);
-            $this->loanRepayment->setLastDueDate($object["LastDueDate"]);
-            $this->loanRepayment->setNextDueDate($object["NextDueDate"]);
-            $this->loanRepayment->setInterestAmount($object["InterestAmount"]);
-            $this->loanRepayment->setRolloverAmount($object["RolloverAmount"]);
-            $this->loanRepayment->setLoanIssue((new LoanIssueRepo($object["IsDefaulted"]))->getLoanIssue());;
-            $this->loanRepayment->setMeeting((new MeetingRepo($object["Meeting_id"]))->getMeeting());
-            $this->loanRepayment->setMember((new MemberRepo($object["Member_id"]))->getMember());
+            if($object != false){
+                $this->loanRepayment->setID($object["id"]);
+                $this->loanRepayment->setLoanRepaymentIdEx($object["RepaymentIdEx"]);
+                $this->loanRepayment->setAmount($object["Amount"]);
+                $this->loanRepayment->setBalanceAfter($object["BalanceAfter"]);
+                $this->loanRepayment->setBalanceBefore($object["BalanceBefore"]);
+                $this->loanRepayment->setComments($object["Comments"]);
+                $this->loanRepayment->setLastDueDate($object["LastDueDate"]);
+                $this->loanRepayment->setNextDueDate($object["NextDueDate"]);
+                $this->loanRepayment->setInterestAmount($object["InterestAmount"]);
+                $this->loanRepayment->setRolloverAmount($object["RolloverAmount"]);
+                $this->loanRepayment->setLoanIssue((new LoanIssueRepo($object["IsDefaulted"]))->getLoanIssue());;
+                $this->loanRepayment->setMeeting((new MeetingRepo($object["Meeting_id"]))->getMeeting());
+                $this->loanRepayment->setMember((new MemberRepo($object["Member_id"]))->getMember());
+            }
         }
     }
     
@@ -63,14 +65,15 @@ class LoanRepaymentRepo {
         $loanRepaymentId = $this->__getIDFromLoanRepaymentIdEx($loanRepayment->getMeeting()->getID(), $loanRepayment->getLoanRepaymentIdEx());
         if($loanRepaymentId != null){
             $loanRepayment->setID($loanRepaymentId);
-            $this->update($loanRepayment);
+            return $this->update($loanRepayment);
         }else{
-            $this->__add($loanRepayment);
+            return $this->__add($loanRepayment);
         }
+        return -1;
     }
     
     protected function __add($loanRepayment){
-        $statement = $this->db->prepare("insert into loanRepayment values (0,"
+        $statement = $this->db->prepare("insert into loanrepayment values (0,"
                 . ":RepaymentIdEx,"
                 . ":Amount,"
                 . ":BalanceAfter,"
@@ -87,9 +90,9 @@ class LoanRepaymentRepo {
         $statement->bindValue(":Amount", $loanRepayment->getAmount(), PDO::PARAM_INT);
         $statement->bindValue(":BalanceAfter", $loanRepayment->getBalanceAfter(), PDO::PARAM_INT);
         $statement->bindValue(":BalanceBefore", $loanRepayment->getBalanceBefore(), PDO::PARAM_INT);
-        $statement->bindValue(":Comments", $loanRepayment->getComments(), PDO::PARAM_INT);
-        $statement->bindValue(":LastDueDate", $loanRepayment->getLastDueDate(), PDO::PARAM_STR);
-        $statement->bindValue(":NextDueDate", $loanRepayment->getNextDueDate(), PDO::PARAM_STR);
+        $statement->bindValue(":Comments", $loanRepayment->getComments() == null ? NULL : $loanRepayment->getComments(), PDO::PARAM_INT);
+        $statement->bindValue(":LastDueDate", $loanRepayment->getLastDueDate() == null ? NULL : $loanRepayment->getLastDueDate(), PDO::PARAM_STR);
+        $statement->bindValue(":NextDueDate", $loanRepayment->getNextDueDate() == null ? NULL : $loanRepayment->getNextDueDate(), PDO::PARAM_STR);
         $statement->bindValue(":InterestAmount", $loanRepayment->getInterestAmount(), PDO::PARAM_STR);
         $statement->bindValue(":RolloverAmount", $loanRepayment->getRolloverAmount(), PDO::PARAM_INT);
         $statement->bindValue(":LoanIssue_id", $loanRepayment->getLoanIssue()->getID(), PDO::PARAM_INT);
@@ -117,9 +120,9 @@ class LoanRepaymentRepo {
         $statement->bindValue(":Amount", $loanRepayment->getAmount(), PDO::PARAM_INT);
         $statement->bindValue(":BalanceAfter", $loanRepayment->getBalanceAfter(), PDO::PARAM_INT);
         $statement->bindValue(":BalanceBefore", $loanRepayment->getBalanceBefore(), PDO::PARAM_INT);
-        $statement->bindValue(":Comments", $loanRepayment->getComments(), PDO::PARAM_INT);
-        $statement->bindValue(":LastDueDate", $loanRepayment->getLastDueDate(), PDO::PARAM_STR);
-        $statement->bindValue(":NextDueDate", $loanRepayment->getNextDueDate(), PDO::PARAM_STR);
+        $statement->bindValue(":Comments", $loanRepayment->getComments() == null ? NULL : $loanRepayment->getComments(), PDO::PARAM_INT);
+        $statement->bindValue(":LastDueDate", $loanRepayment->getLastDueDate() == null ? NULL : $loanRepayment->getLastDueDate(), PDO::PARAM_STR);
+        $statement->bindValue(":NextDueDate", $loanRepayment->getNextDueDate() == null ? NULL : $loanRepayment->getNextDueDate(), PDO::PARAM_STR);
         $statement->bindValue(":InterestAmount", $loanRepayment->getInterestAmount(), PDO::PARAM_STR);
         $statement->bindValue(":RolloverAmount", $loanRepayment->getRolloverAmount(), PDO::PARAM_INT);
         $statement->bindValue(":LoanIssue_id", $loanRepayment->getLoanIssue()->getID(), PDO::PARAM_INT);
@@ -136,7 +139,7 @@ class LoanRepaymentRepo {
         $statement->bindValue(":RepaymentIdEx", $loanRepaymentIdEx, PDO::PARAM_INT);
         $statement->execute();
         $object = $statement->fetch(PDO::FETCH_ASSOC);
-        return count($object) == 1 ? $object["id"] : null;
+        return $object == false ? null : $object["id"];
     }
     
     public static function getIDFromLoanRepaymentIdEx($meetingId, $loanRepaymentIdEx){
@@ -144,6 +147,6 @@ class LoanRepaymentRepo {
     }
     
     public static function save($loanRepayment){
-        (new LoanRepaymentRepo())->__save($loanRepayment);
+        return (new LoanRepaymentRepo())->__save($loanRepayment);
     }
 }

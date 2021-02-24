@@ -32,6 +32,7 @@ class LoanRepaymentFactory {
     
     protected function __process($targetVsla){
         if(is_array($this->loanRepaymentInfo)){
+            $index = 0;
             for($i = 0; $i < count($this->loanRepaymentInfo); $i++){
                 $loanRepaymentData = $this->loanRepaymentInfo[$i];
                 $loanRepayment = new LoanRepayment();
@@ -83,9 +84,15 @@ class LoanRepaymentFactory {
                 if(array_key_exists("RepaymentId", $loanRepaymentData)){
                     $loanRepayment->setLoanRepaymentIdEx($loanRepaymentData["RepaymentId"]);
                 }
-                LoanRepaymentRepo::save($loanRepayment);
+                if(LoanRepaymentRepo::save($loanRepayment) > -1){
+                    $index++;
+                }
+            }
+            if($index == count($this->loanRepaymentInfo)){
+                return 1;
             }
         }
+        return 0;
     }
     
     public static function process($loanRepaymentInfo, $meetingInfo, $targetVsla){

@@ -38,18 +38,20 @@ class FineRepo {
             $statement->bindValue(":id", $this->ID, PDO::PARAM_INT);
             $statement->execute();
             $object = $statement->fetch(PDO::FETCH_ASSOC);
-            $this->fine->setID($object["id"]);
-            $this->fine->setFineIdEx($object["FineIdEx"]);
-            $this->fine->setAmount($object["Amount"]);
-            $this->fine->setExpectedDate($object["ExpectedDate"]);
-            $this->fine->setIsCleared($object["IsCleared"]);
-            $this->fine->setDateCleared($object["DateCleared"]);
-            $this->fine->setIssuedInMeetingIdEx($object["IssuedInMeetingIdEx"]);
-            $this->fine->setIssuedInMeeting((new MeetingRepo($object["IssuedInMeeting_id"]))->getMeeting());
-            $this->fine->setPaidInMeetingIdEx($object["PaidInMeetingIdEx"]);
-            $this->fine->setFineTypeId($object["FineTypeId"]);
-            $this->fine->setMember((new MemberRepo($object["Member_id"]))->getMember());
-            $this->fine->setPaidInMeeting((new MeetingRepo($object["PaidInMeeting_id"]))->getMeeting());
+            if($object != false){
+                $this->fine->setID($object["id"]);
+                $this->fine->setFineIdEx($object["FineIdEx"]);
+                $this->fine->setAmount($object["Amount"]);
+                $this->fine->setExpectedDate($object["ExpectedDate"]);
+                $this->fine->setIsCleared($object["IsCleared"]);
+                $this->fine->setDateCleared($object["DateCleared"]);
+                $this->fine->setIssuedInMeetingIdEx($object["IssuedInMeetingIdEx"]);
+                $this->fine->setIssuedInMeeting((new MeetingRepo($object["IssuedInMeeting_id"]))->getMeeting());
+                $this->fine->setPaidInMeetingIdEx($object["PaidInMeetingIdEx"]);
+                $this->fine->setFineTypeId($object["FineTypeId"]);
+                $this->fine->setMember((new MemberRepo($object["Member_id"]))->getMember());
+                $this->fine->setPaidInMeeting((new MeetingRepo($object["PaidInMeeting_id"]))->getMeeting());
+            }
         }
     }
     
@@ -61,10 +63,11 @@ class FineRepo {
         $fineId = $this->__getIDFromFineIdEx($fine->getIssuedInMeeting()->getID(), $fine->getFineIdEx());
         if($fineId != null){
             $fine->setID($fineId);
-            $this->update($fine);
+            return $this->update($fine);
         }else{
-            $this->__add($fine);
+            return $this->__add($fine);
         }
+        return -1;
     }
     
     protected function __getIDFromFineIdEx($issuedInMeetingId, $fineIdEx){
@@ -73,7 +76,7 @@ class FineRepo {
         $statement->bindValue(":FineIdEx", $fineIdEx, PDO::PARAM_INT);
         $statement->execute();
         $object = $statement->fetch(PDO::FETCH_ASSOC);
-        return count($object) == 1 ? $object["id"] : null;
+        return $object == false ? null : $object["id"];
     }
     
     protected function __add($fine){
@@ -91,9 +94,9 @@ class FineRepo {
                 . ":PaidInMeeting_id)");
         $statement->bindValue(":FineIdEx", $fine->getFineIdEx(), PDO::PARAM_INT);
         $statement->bindValue(":Amount", $fine->getAmount(), PDO::PARAM_INT);
-        $statement->bindValue(":ExpectedDate", $fine->getExpectedDate(), PDO::PARAM_STR);
-        $statement->bindValue(":IsCleared", $fine->getIsCleared(), PDO::PARAM_INT);
-        $statement->bindValue(":DateCleared", $fine->getDateCleared(), PDO::PARAM_STR);
+        $statement->bindValue(":ExpectedDate", $fine->getExpectedDate() == null ? NULL : $fine->getExpectedDate(), PDO::PARAM_STR);
+        $statement->bindValue(":IsCleared", $fine->getIsCleared() == null ? 0 : $fine->getIsCleared(), PDO::PARAM_INT);
+        $statement->bindValue(":DateCleared", $fine->getDateCleared() == null ? NULL : $fine->getDateCleared(), PDO::PARAM_STR);
         $statement->bindValue(":IssuedInMeetingIdEx", $fine->getIssuedInMeetingIdEx(), PDO::PARAM_INT);
         $statement->bindValue(":PaidInMeetingIdEx", $fine->getPaidInMeetingIdEx(), PDO::PARAM_INT);
         $statement->bindValue(":FineTypeId", $fine->getFineTypeId(), PDO::PARAM_INT);
@@ -119,20 +122,21 @@ class FineRepo {
                 . "PaidInMeeting_id = :PaidInMeeting_id where id = :id");
         $statement->bindValue(":FineIdEx", $fine->getFineIdEx(), PDO::PARAM_INT);
         $statement->bindValue(":Amount", $fine->getAmount(), PDO::PARAM_INT);
-        $statement->bindValue(":ExpectedDate", $fine->getExpectedDate(), PDO::PARAM_STR);
-        $statement->bindValue(":IsCleared", $fine->getIsCleared(), PDO::PARAM_INT);
-        $statement->bindValue(":DateCleared", $fine->getDateCleared(), PDO::PARAM_STR);
+        $statement->bindValue(":ExpectedDate", $fine->getExpectedDate() == null ? NULL : $fine->getExpectedDate(), PDO::PARAM_STR);
+        $statement->bindValue(":IsCleared", $fine->getIsCleared() == null ? 0 : $fine->getIsCleared(), PDO::PARAM_INT);
+        $statement->bindValue(":DateCleared", $fine->getDateCleared() == null ? NULL : $fine->getDateCleared(), PDO::PARAM_STR);
         $statement->bindValue(":IssuedInMeetingIdEx", $fine->getIssuedInMeetingIdEx(), PDO::PARAM_INT);
-        $statement->bindValue(":PaidInMeetingIdEx", $fine->getPaidInMeetingIdEx(), PDO::PARAM_INT);
-        $statement->bindValue(":FineTypeId", $fine->getFineTypeId(), PDO::PARAM_INT);
+        $statement->bindValue(":PaidInMeetingIdEx", $fine->getPaidInMeetingIdEx() == null ? 0 : $fine->getPaidInMeetingIdEx(), PDO::PARAM_INT);
+        $statement->bindValue(":FineTypeId", $fine->getFineTypeId() == null ? 0 : $fine->getFineTypeId(), PDO::PARAM_INT);
         $statement->bindValue(":IssuedInMeeting_id", $fine->getIssuedInMeeting()->getID(), PDO::PARAM_INT);
         $statement->bindValue(":Member_id", $fine->getMember()->getID(), PDO::PARAM_INT);
         $statement->bindValue(":PaidInMeeting_id", $fine->getPaidInMeeting()->getID(), PDO::PARAM_INT);
         $statement->bindValue(":id", $fine->getID(), PDO::PARAM_INT);
         $statement->execute();
+        return $statement->rowCount();
     }
     
     public static function save($fine){
-        (new FineRepo())->__save($fine);
+        return (new FineRepo())->__save($fine);
     }
 }

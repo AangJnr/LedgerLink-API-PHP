@@ -37,21 +37,23 @@ class MemberRepo{
             $statement->bindValue(":id", $this->ID, PDO::PARAM_INT);
             $statement->execute();
             $object = $statement->fetch(PDO::FETCH_ASSOC);
-            $this->member->setID($object["id"]);
-            $this->member->setMemberIdEx($object["MemberIdEx"]);
-            $this->member->setMemberNumber($object["MemberNo"]);
-            $this->member->setCyclesCompleted($object["CyclesCompleted"]);
-            $this->member->setSurname($object["Surname"]);
-            $this->member->setOtherNames($object["OtherNames"]);
-            $this->member->setGender($object["Gender"]);
-            $this->member->setOccupation($object["Occupation"]);
-            $this->member->setDateArchived($object["DateArchived"]);
-            $this->member->setDateOfBirth($object["DateOfBirth"]);
-            $this->member->setIsActive($object["IsActive"]);
-            $this->member->setIsActive($object["IsActive"]);
-            $this->member->setIsArchived($object["IsArchived"]);
-            $this->member->setPhoneNumber($object["PhoneNo"]);
-            $this->member->setVsla((new VslaRepo($object["Vsla_id"]))->getVsla());
+            if($object != false){
+                $this->member->setID($object["id"]);
+                $this->member->setMemberIdEx($object["MemberIdEx"]);
+                $this->member->setMemberNumber($object["MemberNo"]);
+                $this->member->setCyclesCompleted($object["CyclesCompleted"]);
+                $this->member->setSurname($object["Surname"]);
+                $this->member->setOtherNames($object["OtherNames"]);
+                $this->member->setGender($object["Gender"]);
+                $this->member->setOccupation($object["Occupation"]);
+                $this->member->setDateArchived($object["DateArchived"]);
+                $this->member->setDateOfBirth($object["DateOfBirth"]);
+                $this->member->setIsActive($object["IsActive"]);
+                $this->member->setIsActive($object["IsActive"]);
+                $this->member->setIsArchived($object["IsArchived"]);
+                $this->member->setPhoneNumber($object["PhoneNo"]);
+                $this->member->setVsla((new VslaRepo($object["Vsla_id"]))->getVsla());
+            }
         }
     }
     
@@ -63,10 +65,11 @@ class MemberRepo{
         $memberId = $this->__getIDByMemberIdEx($member->getVsla()->getID(), $member->getMemberIdEx());
         if($memberId != null){
             $member->setID($memberId);
-            $this->update($member);
+            return $this->update($member);
         }else{
-            $this->__add($member);
+            return $this->__add($member);
         }
+        return -1;
     }
     
     protected function __getIDByMemberIdEx($vslaId, $memberIdEx){
@@ -75,7 +78,7 @@ class MemberRepo{
         $statement->bindValue(":Vsla_id", $vslaId, PDO::PARAM_INT);
         $statement->execute();
         $object = $statement->fetch(PDO::FETCH_ASSOC);
-        return count($object) == 1 ? $object["id"] : null;
+        return $object == false ? null : $object["id"];
     }
     
     public static function getIDByMemberIdEx($vslaId, $memberIdEx){
@@ -83,24 +86,28 @@ class MemberRepo{
     }
     
     protected function __add($member){
-        $statement = $this->db->prepare("insert into ledgerlink.member values (0, :MemberIdEx, "
-                . ":MemberNo, :CyclesCompleted, :Surname, :OtherNames, :Gender, :Occupation, :DateArchived,"
-                . ":DateOfBirth, :IsActive, :IsArchived, :PhoneNo, :Vsla_id)");
-        $statement->bindValue(":MemberIdEx", $member->getMemberIdEx(), PDO::PARAM_INT);
-        $statement->bindValue(":MemberNo", $member->getMemberNumber(), PDO::PARAM_INT);
-        $statement->bindValue(":CyclesCompleted", $member->getCyclesCompleted(), PDO::PARAM_INT);
-        $statement->bindValue(":Surname", $member->getSurname(), PDO::PARAM_STR);
-        $statement->bindValue(":OtherNames", $member->getOtherNames(), PDO::PARAM_STR);
-        $statement->bindValue(":Gender", $member->getGender(), PDO::PARAM_STR);
-        $statement->bindValue(":Occupation", $member->getOccupation(), PDO::PARAM_STR);
-        $statement->bindValue(":DateArchived", $member->getDateArchived(), PDO::PARAM_STR);
-        $statement->bindValue(":DateOfBirth", $member->getDateOfBirth(), PDO::PARAM_STR);
-        $statement->bindValue(":IsActive", $member->getIsActive(), PDO::PARAM_INT);
-        $statement->bindValue(":IsArchived", $member->getIsArchived(), PDO::PARAM_INT);
-        $statement->bindValue(":PhoneNo", $member->getPhoneNumber(), PDO::PARAM_STR);
-        $statement->bindValue(":Vsla_id", $member->getVsla()->getID(), PDO::PARAM_INT);
-        $statement->execute();
-        return $this->db->lastInsertId();
+        $lastInsertId = 0;
+        if($member != null){
+            $statement = $this->db->prepare("insert into ledgerlink.member values (0, :MemberIdEx, "
+                    . ":MemberNo, :CyclesCompleted, :Surname, :OtherNames, :Gender, :Occupation, :DateArchived,"
+                    . ":DateOfBirth, :IsActive, :IsArchived, :PhoneNo, :Vsla_id)");
+            $statement->bindValue(":MemberIdEx", $member->getMemberIdEx(), PDO::PARAM_INT);
+            $statement->bindValue(":MemberNo", $member->getMemberNumber() == null ? 0 : $member->getMemberNumber(), PDO::PARAM_INT);
+            $statement->bindValue(":CyclesCompleted", $member->getCyclesCompleted() == null ? 0 : $member->getCyclesCompleted(), PDO::PARAM_INT);
+            $statement->bindValue(":Surname", $member->getSurname() == null ? NULL : $member->getSurname(), PDO::PARAM_STR);
+            $statement->bindValue(":OtherNames", $member->getOtherNames() == null ? NULL : $member->getOtherNames(), PDO::PARAM_STR);
+            $statement->bindValue(":Gender", $member->getGender() == null ? NULL : $member->getGender(), PDO::PARAM_STR);
+            $statement->bindValue(":Occupation", $member->getOccupation() == null ? NULL : $member->getOccupation(), PDO::PARAM_STR);
+            $statement->bindValue(":DateArchived", $member->getDateArchived() == null ? NULL : $member->getDateArchived(), PDO::PARAM_STR);
+            $statement->bindValue(":DateOfBirth", $member->getDateOfBirth() == null ? NULL : $member->getDateOfBirth(), PDO::PARAM_STR);
+            $statement->bindValue(":IsActive", $member->getIsActive() == null ? 1 : $member->getIsActive(), PDO::PARAM_INT);
+            $statement->bindValue(":IsArchived", $member->getIsArchived() == null ? 0 : $member->getIsArchived(), PDO::PARAM_INT);
+            $statement->bindValue(":PhoneNo", $member->getPhoneNumber() == null ? NULL : $member->getPhoneNumber(), PDO::PARAM_STR);
+            $statement->bindValue(":Vsla_id", $member->getVsla()->getID(), PDO::PARAM_INT);
+            $statement->execute();
+            $lastInsertId = $this->db->lastInsertId();
+        }
+        return $lastInsertId;
     }
     
     public function update($member){
@@ -118,23 +125,24 @@ class MemberRepo{
                 . "PhoneNo = :PhoneNo, "
                 . "Vsla_id = :Vsla_id where id = :id");
         $statement->bindValue(":MemberIdEx", $member->getMemberIdEx());
-        $statement->bindValue(":MemberNo", $member->getMemberNumber());
-        $statement->bindValue(":CyclesCompleted", $member->getCyclesCompleted());
-        $statement->bindValue(":Surname", $member->getSurname());
-        $statement->bindValue(":OtherNames", $member->getOtherNames());
-        $statement->bindValue(":Gender", $member->getGender());
-        $statement->bindValue(":Occupation", $member->getOccupation());
-        $statement->bindValue(":DateArchived", $member->getDateArchived());
-        $statement->bindValue(":DateOfBirth", $member->getDateOfBirth());
-        $statement->bindValue(":IsActive", $member->getIsActive());
-        $statement->bindValue(":IsArchived", $member->getIsArchived());
-        $statement->bindValue(":PhoneNo", $member->getPhoneNumber());
-        $statement->bindValue(":Vsla_id", $member->getVsla()->getID());
+        $statement->bindValue(":MemberNo", $member->getMemberNumber() == null ? 0 : $member->getMemberNumber(), PDO::PARAM_INT);
+        $statement->bindValue(":CyclesCompleted", $member->getCyclesCompleted() == null ? 0 : $member->getCyclesCompleted(), PDO::PARAM_INT);
+        $statement->bindValue(":Surname", $member->getSurname() == null ? NULL : $member->getSurname(), PDO::PARAM_STR);
+        $statement->bindValue(":OtherNames", $member->getOtherNames() == null ? NULL : $member->getOtherNames(), PDO::PARAM_STR);
+        $statement->bindValue(":Gender", $member->getGender() == null ? NULL : $member->getGender(), PDO::PARAM_STR);
+        $statement->bindValue(":Occupation", $member->getOccupation() == null ? NULL : $member->getOccupation(), PDO::PARAM_STR);
+        $statement->bindValue(":DateArchived", $member->getDateArchived() == null ? NULL : $member->getDateArchived(), PDO::PARAM_STR);
+        $statement->bindValue(":DateOfBirth", $member->getDateOfBirth() == null ? NULL : $member->getDateOfBirth(), PDO::PARAM_STR);
+        $statement->bindValue(":IsActive", $member->getIsActive() == null ? 1 : $member->getIsActive(), PDO::PARAM_INT);
+        $statement->bindValue(":IsArchived", $member->getIsArchived() == null ? 0 : $member->getIsArchived(), PDO::PARAM_INT);
+        $statement->bindValue(":PhoneNo", $member->getPhoneNumber() == null ? NULL : $member->getPhoneNumber(), PDO::PARAM_STR);
+        $statement->bindValue(":Vsla_id", $member->getVsla()->getID(), PDO::PARAM_INT);
         $statement->bindValue(":id", $member->getID());
         $statement->execute();
+        return $statement->rowCount();
     }
     
     public static function save($member){
-        (new MemberRepo())->__save($member);
+        return (new MemberRepo())->__save($member);
     }
 }

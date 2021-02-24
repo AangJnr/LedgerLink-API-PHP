@@ -36,9 +36,11 @@ class VslaRegionRepo {
             $statement->bindValue(":id", $this->ID, PDO::PARAM_INT);
             $statement->execute();
             $object = $statement->fetch(PDO::FETCH_ASSOC);
-            $this->vslaRegion->setID($object["id"]);
-            $this->vslaRegion->setRegionCode($object["RegionCode"]);
-            $this->vslaRegion->setRegionName($object["RegionName"]);
+            if($object != false){
+                $this->vslaRegion->setID($object["id"]);
+                $this->vslaRegion->setRegionCode($object["RegionCode"]);
+                $this->vslaRegion->setRegionName($object["RegionName"]);
+            }
         }
     }
     

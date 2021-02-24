@@ -31,6 +31,7 @@ class FineFactory {
     
     protected function __process($targetVsla){
         if(is_array($this->fineInfo)){
+            $index = 0;
             for($i = 0; $i < count($this->fineInfo); $i++){
                 $fineData = $this->fineInfo[$i];
                 $fine = new Fine();
@@ -82,12 +83,18 @@ class FineFactory {
                         }
                     }
                 }
-                FineRepo::save($fine);
+                if(FineRepo::save($fine) > -1){
+                    $index++;
+                }
+            }
+            if($index == count($this->fineInfo)){
+                return 1;
             }
         }
+        return 0;
     }
     
     public static function process($fineInfo, $meetingInfo, $targetVsla){
-        (new FineFactory($fineInfo, $meetingInfo))->__process($targetVsla);
+        return (new FineFactory($fineInfo, $meetingInfo))->__process($targetVsla);
     }
 }

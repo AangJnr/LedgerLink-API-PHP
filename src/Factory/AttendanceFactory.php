@@ -30,6 +30,7 @@ class AttendanceFactory {
     
     protected function __process($targetVsla){
         if(is_array($this->attendanceInfo)){
+            $index = 0;
             for($i = 0; $i < count($this->attendanceInfo); $i++){
                 $attendanceData = $this->attendanceInfo[$i];
                 $attendance = new Attendance();
@@ -63,12 +64,19 @@ class AttendanceFactory {
                         }
                     }
                 }
-                AttendanceRepo::save($attendance);
+                
+                if(AttendanceRepo::save($attendance) > -1){
+                    $index++;
+                }
+            }
+            if($index == count($this->attendanceInfo)){
+                return 1;
             }
         }
+        return 0;
     }
     
     public static function process($attendanceInfo, $meetingInfo, $targetVsla){
-        (new AttendanceFactory($attendanceInfo, $meetingInfo))->__process($targetVsla);
+        return (new AttendanceFactory($attendanceInfo, $meetingInfo))->__process($targetVsla);
     }
 }

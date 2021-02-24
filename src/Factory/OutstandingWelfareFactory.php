@@ -31,6 +31,7 @@ class OutstandingWelfareFactory {
     
     protected function __process($targetVsla){
         if(is_array($this->outstandingWelfareInfo)){
+            $index = 0;
             for($i = 0; $i < count($this->outstandingWelfareInfo); $i++){
                 $outstandingWelfareData = $this->outstandingWelfareInfo[$i];
                 $outstandingWelfare = new OutstandingWelfare();
@@ -83,12 +84,18 @@ class OutstandingWelfareFactory {
                         }
                     }
                 }
-                OutstandingWelfareRepo::save($outstandingWelfare);
+                if(OutstandingWelfareRepo::save($outstandingWelfare) > -1){
+                    $index++;
+                }
+            }
+            if($index == count($this->outstandingWelfareInfo)){
+                return 1;
             }
         }
+        return 0;
     }
     
     public static function process($outstandingWelfareInfo, $meetingInfo, $targetVsla){
-        (new OutstandingWelfareFactory($outstandingWelfareInfo, $meetingInfo))->__process($targetVsla);
+        return (new OutstandingWelfareFactory($outstandingWelfareInfo, $meetingInfo))->__process($targetVsla);
     }
 }

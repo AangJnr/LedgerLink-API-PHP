@@ -40,24 +40,26 @@ class VslaRepo {
             $statement->bindValue(":id", $this->ID, PDO::PARAM_INT);
             $statement->execute();
             $object = $statement->fetch(PDO::FETCH_ASSOC);
-            $this->vsla->setID($object["id"]);
-            $this->vsla->setVslaCode($object["VslaCode"]);
-            $this->vsla->setVslaName($object["VslaName"]);
-            $this->vsla->setVslaPhoneMsisdn($object["VslaPhoneMsisdn"]);
-            $this->vsla->setPhysicalLocation($object["PhysicalAddress"]);
-            $this->vsla->setGpsLocation($object["GpsLocation"]);
-            $this->vsla->setDateRegistered($object["DateRegistered"]);
-            $this->vsla->setDateLinked($object["DateLinked"]);
-            $this->vsla->setContactPerson($object["ContactPerson"]);
-            $this->vsla->setPositionInVsla($object["PositionInVsla"]);
-            $this->vsla->setPhoneNumber($object["PhoneNumber"]);
-            $this->vsla->setStatus($object["Status"]);
-            $this->vsla->setGroupAccountNumber($object["GroupAccountNumber"]);
-            $this->vsla->setNumberOfCycles($object["NumberOfCycles"]);
-            $this->vsla->setImplementer($object["Implementer"]);
-            $this->vsla->setTechnicalTrainer((new TechnicalTrainerRepo($object["TechnicalTrainer_id"]))->getTechnicalTrainer());
-            $this->vsla->setFinancialInstitution((new FinancialInstitutionRepo($object["FinancialInstitution_id"]))->getFinancialInstitution());
-            $this->vsla->setVslaRegion((new VslaRegionRepo($object["Region_id"]))->getVslaRegion());   
+            if($object != false){
+                $this->vsla->setID($object["id"]);
+                $this->vsla->setVslaCode($object["VslaCode"]);
+                $this->vsla->setVslaName($object["VslaName"]);
+                $this->vsla->setVslaPhoneMsisdn($object["VslaPhoneMsisdn"]);
+                $this->vsla->setPhysicalLocation($object["PhysicalAddress"]);
+                $this->vsla->setGpsLocation($object["GpsLocation"]);
+                $this->vsla->setDateRegistered($object["DateRegistered"]);
+                $this->vsla->setDateLinked($object["DateLinked"]);
+                $this->vsla->setContactPerson($object["ContactPerson"]);
+                $this->vsla->setPositionInVsla($object["PositionInVsla"]);
+                $this->vsla->setPhoneNumber($object["PhoneNumber"]);
+                $this->vsla->setStatus($object["Status"]);
+                $this->vsla->setGroupAccountNumber($object["GroupAccountNumber"]);
+                $this->vsla->setNumberOfCycles($object["NumberOfCycles"]);
+                $this->vsla->setImplementer($object["Implementer"]);
+                $this->vsla->setTechnicalTrainer((new TechnicalTrainerRepo($object["TechnicalTrainer_id"]))->getTechnicalTrainer());
+                $this->vsla->setFinancialInstitution((new FinancialInstitutionRepo($object["FinancialInstitution_id"]))->getFinancialInstitution());
+                $this->vsla->setVslaRegion((new VslaRegionRepo($object["Region_id"]))->getVslaRegion()); 
+            }
         }
     }
     

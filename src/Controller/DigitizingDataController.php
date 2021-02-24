@@ -65,7 +65,7 @@ class DigitizingDataController extends AppController {
     public function processSubmittedData(){
         $this->viewBuilder()->layout("blank");
         $numberOfUnprocessedDataSubmissions = DataSubmissionRepo::getCountOfUnProcessedDataSubmissions();
-        for($i = 0; $i < $numberOfUnprocessedDataSubmissions; $i++){
+        for($i = 0; $i < 20; $i++){
             $dataSubmissionID = DataSubmissionRepo::getIdAtIndex($i);
             $dataSubmissionRepo = new DataSubmissionRepo($dataSubmissionID);
             $dataSubmission = $dataSubmissionRepo->getDataSubmission();
@@ -79,48 +79,51 @@ class DigitizingDataController extends AppController {
                         $targetVsla = $vslaDbActivation->getVsla();
                         
                         if(array_key_exists("VslaCycleInfo", $submittedData)){
-                            VslaCycleFactory::process($submittedData["VslaCycleInfo"], $targetVsla);
+                            if(VslaCycleFactory::process($submittedData["VslaCycleInfo"], $targetVsla) > -1){
+                                if(array_key_exists("MembersInfo", $submittedData)){
+                                    if(MemberFactory::process($submittedData["MembersInfo"], $targetVsla) > -1){
+                                        if(array_key_exists("MeetingInfo", $submittedData)){
+                                            if(MeetingFactory::process($submittedData["MeetingInfo"], $targetVsla) > -1){
+                                                if(array_key_exists("AttendanceInfo", $submittedData)){
+                                                    if(AttendanceFactory::process($submittedData["AttendanceInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
+                                                        if(array_key_exists("SavingInfo", $submittedData)){
+                                                            if(SavingFactory::process($submittedData["SavingInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
+                                                                if(array_key_exists("FinesInfo", $submittedData)){
+                                                                    if(FineFactory::process($submittedData["FinesInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
+                                                                        if(array_key_exists("LoansInfo", $submittedData)){
+                                                                            if(LoanIssueFactory::process($submittedData["LoansInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
+                                                                                if(array_key_exists("RepaymentsInfo", $submittedData)){
+                                                                                    if(LoanRepaymentFactory::process($submittedData["RepaymentsInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
+                                                                                        if(array_key_exists("WelfareInfo", $submittedData)){
+                                                                                            if(WelfareFactory::process($submittedData["WelfareInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
+                                                                                                if(array_key_exists("OutstandingWelfareInfo", $submittedData)){
+                                                                                                    if(OutstandingWelfareFactory::process($submittedData["OutstandingWelfareInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
+                                                                                                        var_dump($dataSubmissionRepo->updateProcessedFlag(true));
+                                                                                                    }
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
-
-                        if(array_key_exists("MembersInfo", $submittedData)){
-                            MemberFactory::process($submittedData["MembersInfo"], $targetVsla);
-                        }
-                        
-                        if(array_key_exists("MeetingInfo", $submittedData)){
-                            MeetingFactory::process($submittedData["MeetingInfo"], $targetVsla);
-                        }
-                        
-                        if(array_key_exists("AttendanceInfo", $submittedData)){
-                            AttendanceFactory::process($submittedData["AttendanceInfo"], $submittedData["MeetingInfo"], $targetVsla);
-                        }
-                        
-                        if(array_key_exists("SavingInfo", $submittedData)){
-                            SavingFactory::process($submittedData["SavingInfo"], $submittedData["MeetingInfo"], $targetVsla);
-                        }
-
-                        if(array_key_exists("FinesInfo", $submittedData)){
-                            FineFactory::process($submittedData["FinesInfo"], $submittedData["MeetingInfo"], $targetVsla);
-                        }
-
-                        if(array_key_exists("LoansInfo", $submittedData)){
-                            LoanIssueFactory::process($submittedData["LoansInfo"], $submittedData["MeetingInfo"], $targetVsla);
-                        }
-
-                        if(array_key_exists("RepaymentsInfo", $submittedData)){
-                            LoanRepaymentFactory::process($submittedData["RepaymentsInfo"], $submittedData["MeetingInfo"], $targetVsla);
-                        }
-                        if(array_key_exists("WelfareInfo", $submittedData)){
-                            WelfareFactory::process($submittedData["WelfareInfo"], $submittedData["MeetingInfo"], $targetVsla);
-                        }
-
-                        if(array_key_exists("OutstandingWelfareInfo", $submittedData)){
-                            OutstandingWelfareFactory::process($submittedData["OutstandingWelfareInfo"], $submittedData["MeetingInfo"], $targetVsla);
-                        }
-                        $dataSubmissionRepo->updateProcessedFlag(true);
                     }
                 }
             }
         }
+        $this->set("jsonData");
         
     }
     

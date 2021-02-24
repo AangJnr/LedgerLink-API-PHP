@@ -38,11 +38,13 @@ class SavingRepo {
             $statement->bindValue(":id", $this->ID, PDO::PARAM_INT);
             $statement->execute();
             $object = $statement->fetch(PDO::FETCH_ASSOC);
-            $this->saving->setID($object["id"]);
-            $this->saving->setSavingIdEx($object["SavingIdEx"]);
-            $this->saving->setAmount($object["Amount"]);
-            $this->saving->setMeeting((new MeetingRepo($object["Meeting_id"]))->getMeeting());
-            $this->saving->setMember((new MemberRepo($object["Member_id"]))->getMember());
+            if($object != false){
+                $this->saving->setID($object["id"]);
+                $this->saving->setSavingIdEx($object["SavingIdEx"]);
+                $this->saving->setAmount($object["Amount"]);
+                $this->saving->setMeeting((new MeetingRepo($object["Meeting_id"]))->getMeeting());
+                $this->saving->setMember((new MemberRepo($object["Member_id"]))->getMember());
+            }
         }
     }
     
@@ -54,10 +56,11 @@ class SavingRepo {
         $savingId = $this->__getIDFromSavingIdEx($saving->getMeeting()->getID(), $saving->getSavingIdEx());
         if($savingId != null){
             $saving->setID($savingId);
-            $this->update($saving);
+            return $this->update($saving);
         }else{
-            $this->__add($saving);
+            return $this->__add($saving);
         }
+        return -1;
     }
     
     protected function __getIDFromSavingIdEx($meetingId, $savingIdEx){
@@ -66,7 +69,7 @@ class SavingRepo {
         $statement->bindValue(":SavingIdEx", $savingIdEx, PDO::PARAM_INT);
         $statement->execute();
         $object = $statement->fetch(PDO::FETCH_ASSOC);
-        return count($object) == 1 ? $object["id"] : null;
+        return $object == false ? null : $object["id"];
     }
     
     protected function __add($saving){
@@ -95,9 +98,10 @@ class SavingRepo {
         $statement->bindValue(":Member_id", $saving->getMember()->getID(), PDO::PARAM_INT);
         $statement->bindValue(":id", $saving->getID(), PDO::PARAM_INT);
         $statement->execute();
+        return $statement->rowCount();
     }
     
     public static function save($saving){
-        (new SavingRepo())->__save($saving);
+        return (new SavingRepo())->__save($saving);
     }
 }

@@ -36,14 +36,16 @@ class DataSubmissionRepo {
             $statement->bindValue(":id", $this->ID, PDO::PARAM_INT);
             $statement->execute();
             $object = $statement->fetch(PDO::FETCH_ASSOC);
-            $this->dataSubmission->setData($object["Data"]);
-            $this->dataSubmission->setProcessedFlag($object["ProcessedFlag"]);
-            $this->dataSubmission->setSubmissionTimestamp($object["SubmissionTimestamp"]);
-            $this->dataSubmission->setSourceNetworkOperator($object["SourceNetworkOperator"]);
-            $this->dataSubmission->setSourceNetworkType($object["SourceNetworkType"]);
-            $this->dataSubmission->setID($object["id"]);
-            $this->dataSubmission->setSourcePhoneImei($object["SourcePhoneImei"]);
-            $this->dataSubmission->setSourceVslaCode($object["SourceVslaCode"]);
+            if($object != false){
+                $this->dataSubmission->setData($object["Data"]);
+                $this->dataSubmission->setProcessedFlag($object["ProcessedFlag"]);
+                $this->dataSubmission->setSubmissionTimestamp($object["SubmissionTimestamp"]);
+                $this->dataSubmission->setSourceNetworkOperator($object["SourceNetworkOperator"]);
+                $this->dataSubmission->setSourceNetworkType($object["SourceNetworkType"]);
+                $this->dataSubmission->setID($object["id"]);
+                $this->dataSubmission->setSourcePhoneImei($object["SourcePhoneImei"]);
+                $this->dataSubmission->setSourceVslaCode($object["SourceVslaCode"]);
+            }
         }
     }
     
@@ -67,7 +69,7 @@ class DataSubmissionRepo {
     
     public function __getIdAtIndex($index){
         $this->db = DatabaseHandler::getInstance();
-        $statement = $this->db->prepare("select id from datasubmission order by id limit :index, 1");
+        $statement = $this->db->prepare("select id from datasubmission where ProcessedFlag = 0 order by id limit :index, 1");
         $statement->bindValue(":index", $index, PDO::PARAM_INT);
         $statement->execute();
         $object = $statement->fetch(PDO::FETCH_ASSOC);
@@ -75,12 +77,13 @@ class DataSubmissionRepo {
     }
     
     public function updateProcessedFlag($boolean = false){
-        $processedFlag = $boolean == false ? 0 : 1;
+//        $processedFlag = $boolean == false ? 0 : 1;
         $this->db = DatabaseHandler::getInstance();
-        $statement = $this->db->prepare("update datasubmission set ProcessedFlag = :ProcessedFlag where id = :id");
-        $statement->bindValue(":ProcessedFlag", $processedFlag, PDO::PARAM_INT);
+        $statement = $this->db->prepare("update datasubmission set ProcessedFlag = 1 where id = :id");
+//        $statement->bindValue(":ProcessedFlag", 1, PDO::PARAM_INT);
         $statement->bindValue(":id", $this->ID, PDO::PARAM_INT);
         $statement->execute();
+        return $statement->rowCount();
     }
     
     public static function getIdAtIndex($index=0){
@@ -92,7 +95,7 @@ class DataSubmissionRepo {
         $statement = $this->db->prepare("select count(*) as TotalNumber from datasubmission where ProcessedFlag = 0");
         $statement->execute();
         $object = $statement->fetch(PDO::FETCH_ASSOC);
-        return $object["TotalNumber"];
+        return $object == false ? 0 : $object["TotalNumber"];
     }
     
     public static function getCountOfUnProcessedDataSubmissions(){
