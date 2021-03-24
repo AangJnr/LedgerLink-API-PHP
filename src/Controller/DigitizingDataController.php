@@ -29,6 +29,7 @@ use App\Factory\OutstandingWelfareFactory;
 use App\Repository\VslaDbActivationRepo;
 use App\Repository\VslaRepo;
 use App\Repository\DataSubmissionRepo;
+use App\Helpers\DatabaseHandler;
 
 class DigitizingDataController extends AppController {
     //put your code here
@@ -64,57 +65,59 @@ class DigitizingDataController extends AppController {
     
     public function processSubmittedData(){
         $this->viewBuilder()->layout("blank");
-        $numberOfUnprocessedDataSubmissions = DataSubmissionRepo::getCountOfUnProcessedDataSubmissions();
-        for($i = 0; $i < 20; $i++){
-            $dataSubmissionID = DataSubmissionRepo::getIdAtIndex($i);
-            $dataSubmissionRepo = new DataSubmissionRepo($dataSubmissionID);
+        $db = DatabaseHandler::getInstance();
+        
+        $numberOfUnprocessedDataSubmissions = DataSubmissionRepo::getCountOfUnProcessedDataSubmissions($db);
+        for($i = 0; $i < $numberOfUnprocessedDataSubmissions; $i++){
+            $dataSubmissionID = DataSubmissionRepo::getIdAtIndex($db, $i);
+            $dataSubmissionRepo = new DataSubmissionRepo($db, $dataSubmissionID);
             $dataSubmission = $dataSubmissionRepo->getDataSubmission();
             $submittedData = json_decode($dataSubmission->getData(), true);
             if(is_array($submittedData)){
                 if(array_key_exists("HeaderInfo", $submittedData)){
                     $headerInfo = $submittedData["HeaderInfo"];
-                    $vslaDbActivationID = VslaDbActivationFactory::authenticate($headerInfo["VslaCode"], $headerInfo["PassKey"]);
+                    $vslaDbActivationID = VslaDbActivationFactory::authenticate($db, $headerInfo["VslaCode"], $headerInfo["PassKey"]);
                     if($vslaDbActivationID != null){
-                        $vslaDbActivation = (new VslaDbActivationRepo($vslaDbActivationID))->getVslaDbActivation();
+                        $vslaDbActivation = (new VslaDbActivationRepo($db, $vslaDbActivationID))->getVslaDbActivation();
                         $targetVsla = $vslaDbActivation->getVsla();
                         
                         if(array_key_exists("VslaCycleInfo", $submittedData)){
-                            if(VslaCycleFactory::process($submittedData["VslaCycleInfo"], $targetVsla) > -1){
+                            if(VslaCycleFactory::process($db, $submittedData["VslaCycleInfo"], $targetVsla) > -1){
                                 if(array_key_exists("MembersInfo", $submittedData)){
-                                    if(MemberFactory::process($submittedData["MembersInfo"], $targetVsla) > -1){
-                                        if(array_key_exists("MeetingInfo", $submittedData)){
-                                            if(MeetingFactory::process($submittedData["MeetingInfo"], $targetVsla) > -1){
-                                                if(array_key_exists("AttendanceInfo", $submittedData)){
-                                                    if(AttendanceFactory::process($submittedData["AttendanceInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
-                                                        if(array_key_exists("SavingInfo", $submittedData)){
-                                                            if(SavingFactory::process($submittedData["SavingInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
-                                                                if(array_key_exists("FinesInfo", $submittedData)){
-                                                                    if(FineFactory::process($submittedData["FinesInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
-                                                                        if(array_key_exists("LoansInfo", $submittedData)){
-                                                                            if(LoanIssueFactory::process($submittedData["LoansInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
-                                                                                if(array_key_exists("RepaymentsInfo", $submittedData)){
-                                                                                    if(LoanRepaymentFactory::process($submittedData["RepaymentsInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
-                                                                                        if(array_key_exists("WelfareInfo", $submittedData)){
-                                                                                            if(WelfareFactory::process($submittedData["WelfareInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
-                                                                                                if(array_key_exists("OutstandingWelfareInfo", $submittedData)){
-                                                                                                    if(OutstandingWelfareFactory::process($submittedData["OutstandingWelfareInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
+                                    if(MemberFactory::process($db, $submittedData["MembersInfo"], $targetVsla) > -1){
+//                                        if(array_key_exists("MeetingInfo", $submittedData)){
+//                                            if(MeetingFactory::process($submittedData["MeetingInfo"], $targetVsla) > -1){
+//                                                if(array_key_exists("AttendanceInfo", $submittedData)){
+//                                                    if(AttendanceFactory::process($submittedData["AttendanceInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
+//                                                        if(array_key_exists("SavingInfo", $submittedData)){
+//                                                            if(SavingFactory::process($submittedData["SavingInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
+//                                                                if(array_key_exists("FinesInfo", $submittedData)){
+//                                                                    if(FineFactory::process($submittedData["FinesInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
+//                                                                        if(array_key_exists("LoansInfo", $submittedData)){
+//                                                                            if(LoanIssueFactory::process($submittedData["LoansInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
+//                                                                                if(array_key_exists("RepaymentsInfo", $submittedData)){
+//                                                                                    if(LoanRepaymentFactory::process($submittedData["RepaymentsInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
+//                                                                                        if(array_key_exists("WelfareInfo", $submittedData)){
+//                                                                                            if(WelfareFactory::process($submittedData["WelfareInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
+//                                                                                                if(array_key_exists("OutstandingWelfareInfo", $submittedData)){
+//                                                                                                    if(OutstandingWelfareFactory::process($submittedData["OutstandingWelfareInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
                                                                                                         var_dump($dataSubmissionRepo->updateProcessedFlag(true));
-                                                                                                    }
-                                                                                                }
-                                                                                            }
-                                                                                        }
-                                                                                    }
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
+//                                                                                                    }
+//                                                                                                }
+//                                                                                            }
+//                                                                                        }
+//                                                                                    }
+//                                                                                }
+//                                                                            }
+//                                                                        }
+//                                                                    }
+//                                                                }
+//                                                            }
+//                                                        }
+//                                                    }
+//                                                }
+//                                            }
+//                                        }
                                     }
                                 }
                             }
@@ -130,44 +133,35 @@ class DigitizingDataController extends AppController {
     public function submitdata(){
         $this->viewBuilder()->layout("blank");
         
-        $postData = filter_input_array(INPUT_POST);
-        if(is_array($postData)){
-            if(count($postData) > 0){
-                $jsonString = file_get_contents("php://input");
-                if(strlen($jsonString) > 0){
-                    $submittedData= json_decode($jsonString, true);
-                    if(is_array($submittedData)){
-                        if(array_key_exists("FileSubmission", $submittedData)){
-                            $jsonResponse = array();
-                            for($i=0; $i < count($submittedData["FileSubmission"]); $i++){
-                                $fileSubmission = $submittedData["FileSubmission"][$i];
-                                if(array_key_exists("HeaderInfo", $fileSubmission)){
-                                    $headerInfo = $fileSubmission["HeaderInfo"];
-                                    $vslaDbActivationID = VslaDbActivationFactory::authenticate($headerInfo["VslaCode"], $headerInfo["PassKey"]);
-                                    if($vslaDbActivationID != null){
-                                        $submissionResult = DataSubmissionFactory::process($headerInfo, json_encode($fileSubmission));
-                                        if($submissionResult > 0){
-                                            if(array_key_exists("MeetingInfo", $fileSubmission)){
-                                                array_push($jsonResponse, array("StatusCode" => "0", "MeetingId" => "{$fileSubmission["MeetingInfo"]["MeetingId"]}"));
-                                            }
-                                        }else{
-                                            array_push($jsonResponse, array("StatusCode" => "1", "MeetingId" => "0"));
-                                        }
-                                    }else{
-                                        array_push($jsonResponse, array("StatusCode" => "1", "MeetingId" => "0"));
+        $jsonString = file_get_contents("php://input");
+        if(strlen($jsonString) > 0){
+            $submittedData= json_decode($jsonString, true);
+            if(is_array($submittedData)){
+                if(array_key_exists("FileSubmission", $submittedData)){
+                    $jsonResponse = array();
+                    for($i=0; $i < count($submittedData["FileSubmission"]); $i++){
+                        $fileSubmission = $submittedData["FileSubmission"][$i];
+                        if(array_key_exists("HeaderInfo", $fileSubmission)){
+                            $headerInfo = $fileSubmission["HeaderInfo"];
+                            $vslaDbActivationID = VslaDbActivationFactory::authenticate($headerInfo["VslaCode"], $headerInfo["PassKey"]);
+                            if($vslaDbActivationID != null){
+                                $submissionResult = DataSubmissionFactory::process($headerInfo, json_encode($fileSubmission));
+                                if($submissionResult > 0){
+                                    if(array_key_exists("MeetingInfo", $fileSubmission)){
+                                        array_push($jsonResponse, array("StatusCode" => "0", "MeetingId" => "{$fileSubmission["MeetingInfo"]["MeetingId"]}", "SavedRecord" => "True", "Authenticated" => "True"));
                                     }
+                                }else{
+                                    array_push($jsonResponse, array("StatusCode" => "1", "MeetingId" => "0", "SavedRecord" => "False", "Authenticated" => "True"));
                                 }
-                            }
-                            if(count($jsonResponse) > 0){
-                                $this->set("jsonData", json_encode($jsonResponse));
                             }else{
-                                $this->set("jsonData", json_encode(array_push($jsonResponse, array("StatusCode" => "1", "MeetingId" => "0"))));
+                                array_push($jsonResponse, array("StatusCode" => "1", "MeetingId" => "0", "Authenticated" => "False"));
                             }
-                        }else{
-                            $this->set("jsonData", json_encode(array(array("StatusCode" => "1", "MeetingId" => "0"))));
                         }
+                    }
+                    if(count($jsonResponse) > 0){
+                        $this->set("jsonData", json_encode($jsonResponse));
                     }else{
-                        $this->set("jsonData", json_encode(array(array("StatusCode" => "1", "MeetingId" => "0"))));
+                        $this->set("jsonData", json_encode(array_push($jsonResponse, array("StatusCode" => "1", "MeetingId" => "0"))));
                     }
                 }else{
                     $this->set("jsonData", json_encode(array(array("StatusCode" => "1", "MeetingId" => "0"))));
