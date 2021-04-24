@@ -66,110 +66,20 @@ class DigitizingDataController extends AppController {
             $dataSubmissionID = DataSubmissionRepo::getIdAtIndex($db, $i);
             $dataSubmissionRepo = new DataSubmissionRepo($db, $dataSubmissionID);
             $dataSubmission = $dataSubmissionRepo->getDataSubmission();
-            $submittedData = json_decode($dataSubmission->getData(), true);
-            if(is_array($submittedData)){
-                if(array_key_exists("HeaderInfo", $submittedData)){
-                    $headerInfo = $submittedData["HeaderInfo"];
-                    $vslaDbActivationID = VslaDbActivationFactory::authenticate($db, $headerInfo["VslaCode"], $headerInfo["PassKey"]);
-                    if($vslaDbActivationID != null){
-                        $vslaDbActivation = (new VslaDbActivationRepo($db, $vslaDbActivationID))->getVslaDbActivation();
-                        $targetVsla = $vslaDbActivation->getVsla();
-                        
-                        if(array_key_exists("VslaCycleInfo", $submittedData)){
-                            if(VslaCycleFactory::process($db, $submittedData["VslaCycleInfo"], $targetVsla) > -1){
-                                if(array_key_exists("MembersInfo", $submittedData)){
-                                    if(MemberFactory::process($db, $submittedData["MembersInfo"], $targetVsla) > -1){
-                                        if(array_key_exists("MeetingInfo", $submittedData)){
-                                            if(MeetingFactory::process($submittedData["MeetingInfo"], $targetVsla) > -1){
-                                                if(array_key_exists("AttendanceInfo", $submittedData)){
-                                                    if(AttendanceFactory::process($submittedData["AttendanceInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
-                                                        if(array_key_exists("SavingInfo", $submittedData)){
-                                                            if(SavingFactory::process($submittedData["SavingInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
-                                                                if(array_key_exists("FinesInfo", $submittedData)){
-                                                                    if(FineFactory::process($submittedData["FinesInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
-                                                                        if(array_key_exists("LoansInfo", $submittedData)){
-                                                                            if(LoanIssueFactory::process($submittedData["LoansInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
-                                                                                if(array_key_exists("RepaymentsInfo", $submittedData)){
-                                                                                    if(LoanRepaymentFactory::process($submittedData["RepaymentsInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
-                                                                                        if(array_key_exists("WelfareInfo", $submittedData)){
-                                                                                            if(WelfareFactory::process($submittedData["WelfareInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
-                                                                                                if(array_key_exists("OutstandingWelfareInfo", $submittedData)){
-                                                                                                    if(OutstandingWelfareFactory::process($submittedData["OutstandingWelfareInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
-                                                                                                        var_dump($dataSubmissionRepo->updateProcessedFlag(true));
-                                                                                                    }
-                                                                                                }
-                                                                                            }
-                                                                                        }
-                                                                                    }
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }else{
-                                var_dump($targetVsla);
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
+            $jsonString = "{\"FileSubmission\":[".$dataSubmission->getData()."]}";
+            
+            $this->__processSubmittedRecords($db, $jsonString);
+            
         }
-        $this->set("jsonData");
         
     }
     
-    protected function __processData($submittedData){
-        $jsonResponse = array();
-        if(is_array($submittedData)){
-            for($i=0; $i < count($submittedData["FileSubmission"]); $i++){
-                $fileSubmission = $submittedData["FileSubmission"][$i];
-                if(array_key_exists("HeaderInfo", $fileSubmission)){
-                    $this->__processDataRecord($fileSubmission, $jsonResponse);
-                }
-            }
-        }
-    }
-    
-    protected function __processDataRecord($fileSubmission, $jsonResponse){
-        $headerInfo = $fileSubmission["HeaderInfo"];
-        if($this->__authenticate($headerInfo["VslaCode"], $headerInfo["PassKey"])){
-            if(DataSubmissionFactory::process($headerInfo, json_encode($fileSubmission)) > 0){
-                $this->__processResponse($fileSubmission, $jsonResponse);
-            }else{
-                array_push($jsonResponse, array("StatusCode" => "1", "MeetingId" => "0", "SavedRecord" => "False", "Authenticated" => "True"));
-            }
-        }else{
-            array_push($jsonResponse, array("StatusCode" => "1", "MeetingId" => "0", "Authenticated" => "False"));
-        }
-    }
-    
-    protected function __processResponse($fileSubmission, $jsonResponse){
-        if(array_key_exists("MeetingInfo", $fileSubmission)){
-            array_push($jsonResponse, array("StatusCode" => "0", "MeetingId" => "{$fileSubmission["MeetingInfo"]["MeetingId"]}", "SavedRecord" => "True", "Authenticated" => "True"));
-        }
-    }
     
     protected function __authenticate($vslaCode, $passKey){
         return VslaDbActivationFactory::authenticate($vslaCode, $passKey) != null ? true : false;
     }
     
-    public function submitdata(){
-        $this->viewBuilder()->layout("blank");
-        $db = DatabaseHandler::getInstance();
-        
-        $jsonString = file_get_contents("php://input");
-//        $dataSubmissionRepo = new DataSubmissionRepo($db, 1861);
-//        $dataSubmission = $dataSubmissionRepo->getDataSubmission();
-//        $jsonString = "{\"FileSubmission\":[".$dataSubmission->getData()."]}";
+    protected function __processSubmittedRecords($db, $jsonString){
         if(strlen($jsonString) > 0){
             $submittedData= json_decode($jsonString, true);
             if(is_array($submittedData)){
@@ -226,7 +136,7 @@ class DigitizingDataController extends AppController {
                                                                     }
                                                                 }
                                                                 if(array_key_exists("OutstandingWelfareInfo", $fileSubmission)){
-                                                                    if(OutstandingWelfareFactory::process($db, $submittedData["OutstandingWelfareInfo"], $submittedData["MeetingInfo"], $targetVsla) > 0){
+                                                                    if(OutstandingWelfareFactory::process($db, $fileSubmission["OutstandingWelfareInfo"], $fileSubmission["MeetingInfo"], $targetVsla) > 0){
                                                                         $this->set("jsonData", "Outstanding Welfare Processed");
                                                                     }else{
                                                                         $this->set("jsonData", "Outstanding Welfare Not Processed");
@@ -276,5 +186,16 @@ class DigitizingDataController extends AppController {
         }else{
             $this->set("jsonData", json_encode(array(array("StatusCode" => "1", "MeetingId" => "0", "Message" => "No Data Sent"))));
         }
+    }
+    
+    public function submitdata(){
+        $this->viewBuilder()->layout("blank");
+        $db = DatabaseHandler::getInstance();
+        
+        $jsonString = file_get_contents("php://input");
+//        $dataSubmissionRepo = new DataSubmissionRepo($db, 1861);
+//        $dataSubmission = $dataSubmissionRepo->getDataSubmission();
+//        $jsonString = "{\"FileSubmission\":[".$dataSubmission->getData()."]}";
+        $this->__processSubmittedRecords($db, $jsonString);
     }
 }

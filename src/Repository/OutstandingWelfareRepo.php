@@ -96,7 +96,7 @@ class OutstandingWelfareRepo {
         $statement->bindValue(":Comment", $outstandingwelfare->getComment() == null ? NULL : $outstandingwelfare->getComment(), PDO::PARAM_STR);
         $statement->bindValue(":Meeting_id", $outstandingwelfare->getMeeting()->getID(), PDO::PARAM_INT);
         $statement->bindValue(":Member_id", $outstandingwelfare->getMember()->getID(), PDO::PARAM_INT);
-        $statement->bindValue(":PaidInMeeting_id", $outstandingwelfare->getPaidInMeeting()->getID(), PDO::PARAM_INT);
+        $statement->bindValue(":PaidInMeeting_id", $outstandingwelfare->getPaidInMeeting() != null ? $outstandingwelfare->getPaidInMeeting()->getID() : 0, PDO::PARAM_INT);
         $statement->execute();
         return $this->db->lastInsertId();
     }
@@ -120,7 +120,7 @@ class OutstandingWelfareRepo {
         $statement->bindValue(":Comment", $outstandingwelfare->getComment() == null ? NULL : $outstandingwelfare->getComment(), PDO::PARAM_STR);
         $statement->bindValue(":Meeting_id", $outstandingwelfare->getMeeting()->getID(), PDO::PARAM_INT);
         $statement->bindValue(":Member_id", $outstandingwelfare->getMember()->getID(), PDO::PARAM_INT);
-        $statement->bindValue(":PaidInMeeting_id", $outstandingwelfare->getPaidInMeeting()->getID(), PDO::PARAM_INT);
+        $statement->bindValue(":PaidInMeeting_id", $outstandingwelfare->getPaidInMeeting() != null ? $outstandingwelfare->getPaidInMeeting()->getID() : 0, PDO::PARAM_INT);
         $statement->bindValue(":id", $outstandingwelfare->getID(), PDO::PARAM_INT);
         $statement->execute();
         return $statement->rowCount();
