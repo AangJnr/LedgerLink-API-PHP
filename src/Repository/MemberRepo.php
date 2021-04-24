@@ -24,10 +24,10 @@ class MemberRepo{
     protected $member;
     var $db;
     
-    public function __construct($ID = null){
+    public function __construct($db, $ID = null){
         $this->ID = $ID;
         $this->member = new Member();
-        $this->db = DatabaseHandler::getInstance();
+        $this->db = $db;
         $this->__load();
     }
     
@@ -81,8 +81,8 @@ class MemberRepo{
         return $object == false ? null : $object["id"];
     }
     
-    public static function getIDByMemberIdEx($vslaId, $memberIdEx){
-        return (new MemberRepo())->__getIDByMemberIdEx($vslaId, $memberIdEx);
+    public static function getIDByMemberIdEx($db, $vslaId, $memberIdEx){
+        return (new MemberRepo($db))->__getIDByMemberIdEx($vslaId, $memberIdEx);
     }
     
     protected function __add($member){
@@ -142,7 +142,7 @@ class MemberRepo{
         return $statement->rowCount();
     }
     
-    public static function save($member){
-        return (new MemberRepo())->__save($member);
+    public static function save($db, $member){
+        return (new MemberRepo($db))->__save($member);
     }
 }

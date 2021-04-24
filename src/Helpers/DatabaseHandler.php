@@ -17,7 +17,22 @@ use PDO;
 
 class DatabaseHandler {
     //put your code here
+    protected $pdo;
+    
+    protected function __construct(){
+        $this->pdo = null;
+    }
+    
+    protected function __getInstance(){
+        try{
+            $this->pdo = new PDO("mysql:host=localhost;port=3308;dbname=ledgerlink;charset=utf8", "grameen", "gram33n1234");
+        }catch(Exception $e){
+            var_dump($e->getMessage());
+        }
+        return $this->pdo;
+    }
+    
     public static function getInstance(){ 
-        return new PDO("mysql:host=localhost;dbname=ledgerlink;charset=utf8", "grameen", "gram33n1234$");
+        return (new DatabaseHandler())->__getInstance();
     }
 }

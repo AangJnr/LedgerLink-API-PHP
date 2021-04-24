@@ -20,8 +20,10 @@ use App\Repository\VslaCycleRepo;
 class MeetingFactory {
     //put your code here
     protected $meetingInfo;
+    protected $db;
     
-    protected function __construct($meetingInfo){
+    protected function __construct($db, $meetingInfo){
+        $this->db = $db;
         $this->meetingInfo = $meetingInfo;
     }
     
@@ -29,9 +31,10 @@ class MeetingFactory {
         if(is_array($this->meetingInfo)){
             $meeting = new Meeting();
             if(array_key_exists("CycleId", $this->meetingInfo)){
-                $cycleId = VslaCycleRepo::getIDByCycleIdEx($targetVsla->getID(), $this->meetingInfo["CycleId"]);
+                $cycleId = VslaCycleRepo::getIDByCycleIdEx($this->db, $targetVsla->getID(), $this->meetingInfo["CycleId"]);
                 if($cycleId != null){
-                    $meeting->setVslaCycle((new VslaCycleRepo($cycleId))->getVslaCycle());
+                    $vslaCycle = (new VslaCycleRepo($this->db, $cycleId))->getVslaCycle();
+                    $meeting->setVslaCycle($vslaCycle);
                     if(array_key_exists("MeetingId", $this->meetingInfo)){
                         $meeting->setMeetingIdEx($this->meetingInfo["MeetingId"]);
                     }
@@ -63,14 +66,14 @@ class MeetingFactory {
                         $meeting->setBankLoanRepayment($this->meetingInfo["BankLoanRepayment"]);
                     }
                     $meeting->setDateSent(date("Y-m-d H:i:s"));
-                    return MeetingRepo::save($meeting);
+                    return MeetingRepo::save($this->db, $meeting);
                 }
             }
         }
         return -1;
     }
     
-    public static function process($meetingInfo, $targetVsla){
-        return (new MeetingFactory($meetingInfo))->__process($targetVsla);
+    public static function process($db, $meetingInfo, $targetVsla){
+        return (new MeetingFactory($db, $meetingInfo))->__process($targetVsla);
     }
 }

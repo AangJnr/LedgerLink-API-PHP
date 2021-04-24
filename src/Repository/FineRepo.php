@@ -25,9 +25,9 @@ class FineRepo {
     protected $fine;
     var $db;
     
-    public function __construct($ID = null){
+    public function __construct($db, $ID = null){
         $this->ID = $ID;
-        $this->db = DatabaseHandler::getInstance();
+        $this->db = $db;
         $this->fine = new Fine();
         $this->__load();
     }
@@ -71,12 +71,12 @@ class FineRepo {
     }
     
     protected function __getIDFromFineIdEx($issuedInMeetingId, $fineIdEx){
-        $statement = $this->db->prepare("select id from fine where IssuedInMeeting_id = :IssuedInMeeting_id and FineIdEx = :FineIdEx");
+        $statement = $this->db->prepare("select id from fine where IssuedInMeeting_id = :IssuedInMeeting_id and FineIdEx = :FineIdEx limit 1");
         $statement->bindValue(":IssuedInMeeting_id", $issuedInMeetingId, PDO::PARAM_INT);
         $statement->bindValue(":FineIdEx", $fineIdEx, PDO::PARAM_INT);
         $statement->execute();
         $object = $statement->fetch(PDO::FETCH_ASSOC);
-        return $object == false ? null : $object["id"];
+        return $object != false ? $object["id"] : null;
     }
     
     protected function __add($fine){
@@ -102,7 +102,7 @@ class FineRepo {
         $statement->bindValue(":FineTypeId", $fine->getFineTypeId(), PDO::PARAM_INT);
         $statement->bindValue(":IssuedInMeeting_id", $fine->getIssuedInMeeting()->getID(), PDO::PARAM_INT);
         $statement->bindValue(":Member_id", $fine->getMember()->getID(), PDO::PARAM_INT);
-        $statement->bindValue(":PaidInMeeting_id", $fine->getPaidInMeeting()->getID(), PDO::PARAM_INT);
+        $statement->bindValue(":PaidInMeeting_id", $fine->getPaidInMeeting() == null ? NULL : $fine->getPaidInMeeting()->getID(), PDO::PARAM_INT);
         $statement->execute();
         return $this->db->lastInsertId();
     }
@@ -130,13 +130,13 @@ class FineRepo {
         $statement->bindValue(":FineTypeId", $fine->getFineTypeId() == null ? 0 : $fine->getFineTypeId(), PDO::PARAM_INT);
         $statement->bindValue(":IssuedInMeeting_id", $fine->getIssuedInMeeting()->getID(), PDO::PARAM_INT);
         $statement->bindValue(":Member_id", $fine->getMember()->getID(), PDO::PARAM_INT);
-        $statement->bindValue(":PaidInMeeting_id", $fine->getPaidInMeeting()->getID(), PDO::PARAM_INT);
+        $statement->bindValue(":PaidInMeeting_id", $fine->getPaidInMeeting() == null ? NULL : $fine->getPaidInMeeting()->getID(), PDO::PARAM_INT);
         $statement->bindValue(":id", $fine->getID(), PDO::PARAM_INT);
         $statement->execute();
         return $statement->rowCount();
     }
     
-    public static function save($fine){
-        return (new FineRepo())->__save($fine);
+    public static function save($db, $fine){
+        return (new FineRepo($db))->__save($fine);
     }
 }

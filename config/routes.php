@@ -55,6 +55,8 @@ Router::scope('/', function (RouteBuilder $routes) {
      * ...and connect the rest of 'Pages' controller's URLs.
      */
     $routes->connect('/pages/*', ['controller' => 'Pages', 'action' => 'display']);
+    $routes->connect('/loanperformer/get-loan-performer-variables', ['controller' =>'LoanPerformer', 'action' => 'getLoanPerformerVariables']);
+    $routes->connect('/loanperformer/get-functions', ['controller' =>'LoanPerformer', 'action' => 'getFunctions()']);
 
     /**
      * Connect catchall routes for all controllers.

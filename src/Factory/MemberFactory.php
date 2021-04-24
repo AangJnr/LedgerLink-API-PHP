@@ -20,9 +20,11 @@ class MemberFactory {
     //put your code here
     
     protected $memberInfo;
+    protected $db;
 
-    protected function __construct($memberInfo){
+    protected function __construct($db, $memberInfo){
         $this->memberInfo = $memberInfo;
+        $this->db = $db;
     }
     
     protected function __process($targetVsla){
@@ -73,7 +75,7 @@ class MemberFactory {
                     }
                 }
                 $member->setVsla($targetVsla);
-                if(MemberRepo::save($member) > -1){
+                if(MemberRepo::save($this->db, $member) > -1){
                     $index++;
                 }
             }
@@ -84,7 +86,7 @@ class MemberFactory {
         return -1;
     }
     
-    public static function process($memberInfo, $targetVsla){
-        return (new MemberFactory($memberInfo))->__process($targetVsla);
+    public static function process($db, $memberInfo, $targetVsla){
+        return (new MemberFactory($db, $memberInfo))->__process($targetVsla);
     }
 }

@@ -25,9 +25,9 @@ class OutstandingWelfareRepo {
     protected $outstandingWelfare;
     var $db;
     
-    public function __construct($ID = null){
+    public function __construct($db, $ID = null){
         $this->ID = $ID;
-        $this->db = DatabaseHandler::getInstance();
+        $this->db = $db;
         $this->outstandingWelfare= new OutstandingWelfare();
         $this->__load();
     }
@@ -126,7 +126,7 @@ class OutstandingWelfareRepo {
         return $statement->rowCount();
     }
     
-    public static function save($outstandingwelfare){
-        return (new OutstandingWelfareRepo())->__save($outstandingwelfare);
+    public static function save($db, $outstandingwelfare){
+        return (new OutstandingWelfareRepo($db))->__save($outstandingwelfare);
     }
 }

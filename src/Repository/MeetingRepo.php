@@ -22,12 +22,12 @@ class MeetingRepo {
     //put your code here
     protected $ID;
     protected $meeting;
-    var $db;
+    protected $db;
     
-    public function __construct($ID = null){
+    public function __construct($db, $ID = null){
         $this->ID = $ID;
         $this->meeting = new Meeting();
-        $this->db = DatabaseHandler::getInstance();
+        $this->db = $db;
         $this->__load();
     }
     
@@ -85,8 +85,8 @@ class MeetingRepo {
         return $object == false ? null : $object["id"];
     }
     
-    public static function getIDByMeetingIDEx($vslaCycleId, $meetingIdEx){
-        return (new MeetingRepo())->__getIDByMeetingIdEx($vslaCycleId, $meetingIdEx);
+    public static function getIDByMeetingIDEx($db, $vslaCycleId, $meetingIdEx){
+        return (new MeetingRepo($db))->__getIDByMeetingIdEx($vslaCycleId, $meetingIdEx);
     }
     
     protected function __add($meeting){
@@ -175,7 +175,7 @@ class MeetingRepo {
         return $statement->rowCount();
     }
     
-    public static function save($meeting){
-        return (new MeetingRepo())->__save($meeting);
+    public static function save($db, $meeting){
+        return (new MeetingRepo($db))->__save($meeting);
     }
 }

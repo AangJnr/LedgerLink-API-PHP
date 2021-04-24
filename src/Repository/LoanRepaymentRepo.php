@@ -26,9 +26,9 @@ class LoanRepaymentRepo {
     protected $loanRepayment;
     var $db;
     
-    public function __construct($ID = null){
+    public function __construct($db, $ID = null){
         $this->ID = $ID;
-        $this->db = DatabaseHandler::getInstance();
+        $this->db = $db;
         $this->loanRepayment = new LoanRepayment();
         $this->__load();
     }
@@ -142,11 +142,11 @@ class LoanRepaymentRepo {
         return $object == false ? null : $object["id"];
     }
     
-    public static function getIDFromLoanRepaymentIdEx($meetingId, $loanRepaymentIdEx){
-        return (new LoanRepaymentRepo())->__getIDFromLoanRepaymentIdEx($meetingId, $loanRepaymentIdEx);
+    public static function getIDFromLoanRepaymentIdEx($db, $meetingId, $loanRepaymentIdEx){
+        return (new LoanRepaymentRepo($db))->__getIDFromLoanRepaymentIdEx($meetingId, $loanRepaymentIdEx);
     }
     
-    public static function save($loanRepayment){
-        return (new LoanRepaymentRepo())->__save($loanRepayment);
+    public static function save($db, $loanRepayment){
+        return (new LoanRepaymentRepo($db))->__save($loanRepayment);
     }
 }

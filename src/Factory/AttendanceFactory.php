@@ -22,10 +22,12 @@ class AttendanceFactory {
     //put your code here
     protected $attendanceInfo;
     protected $meetingInfo;
+    protected $db;
     
-    protected function __construct($attendanceInfo, $meetingInfo){
+    protected function __construct($db, $attendanceInfo, $meetingInfo){
         $this->attendanceInfo = $attendanceInfo;
         $this->meetingInfo = $meetingInfo;
+        $this->db = $db;
     }
     
     protected function __process($targetVsla){
@@ -44,39 +46,38 @@ class AttendanceFactory {
                     $attendance->setComments($attendanceData["Comments"]);
                 }
                 if(array_key_exists("MemberId", $attendanceData)){
-                    $memberId = MemberRepo::getIDByMemberIdEx($targetVsla->getID(), $attendanceData["MemberId"]);
+                    $memberId = MemberRepo::getIDByMemberIdEx($this->db, $targetVsla->getID(), $attendanceData["MemberId"]);
                     if($memberId != null){
-                        $member = (new MemberRepo($memberId))->getMember();
+                        $member = (new MemberRepo($this->db, $memberId))->getMember();
                         $attendance->setMember($member);
-                    }else{
-                        
-                    }
-                }
-                if(is_array($this->meetingInfo)){
-                    if(array_key_exists("CycleId", $this->meetingInfo)){
-                        $vslaCycleId = VslaCycleRepo::getIDByCycleIdEx($targetVsla->getID(), $this->meetingInfo["CycleId"]);
-                        if($vslaCycleId != null){
-                            if(array_key_exists("MeetingId", $this->meetingInfo)){
-                                $meetingId = MeetingRepo::getIDByMeetingIDEx($vslaCycleId, $this->meetingInfo["MeetingId"]);
-                                $meeting = (new MeetingRepo($meetingId))->getMeeting();
-                                $attendance->setMeeting($meeting);
+                        if(is_array($this->meetingInfo)){
+                            if(array_key_exists("CycleId", $this->meetingInfo)){
+                                $vslaCycleId = VslaCycleRepo::getIDByCycleIdEx($this->db, $targetVsla->getID(), $this->meetingInfo["CycleId"]);
+                                if($vslaCycleId != null){
+                                    if(array_key_exists("MeetingId", $this->meetingInfo)){
+                                        $meetingId = MeetingRepo::getIDByMeetingIDEx($this->db, $vslaCycleId, $this->meetingInfo["MeetingId"]);
+                                        $meeting = (new MeetingRepo($this->db, $meetingId))->getMeeting();
+                                        $attendance->setMeeting($meeting);
+                                    }
+                                }
                             }
+                        }
+//                        var_dump($attendance);
+                        if(AttendanceRepo::save($this->db, $attendance) > -1){
+                            $index++;
                         }
                     }
                 }
-                
-                if(AttendanceRepo::save($attendance) > -1){
-                    $index++;
-                }
+
             }
-            if($index == count($this->attendanceInfo)){
+            if($index > 0){
                 return 1;
             }
         }
         return 0;
     }
     
-    public static function process($attendanceInfo, $meetingInfo, $targetVsla){
-        return (new AttendanceFactory($attendanceInfo, $meetingInfo))->__process($targetVsla);
+    public static function process($db, $attendanceInfo, $meetingInfo, $targetVsla){
+        return (new AttendanceFactory($db, $attendanceInfo, $meetingInfo))->__process($targetVsla);
     }
 }

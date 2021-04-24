@@ -23,7 +23,8 @@ class DataSubmissionRepo {
     protected $dataSubmission;
     var $db;
     
-    public function __construct($ID = null){
+    public function __construct($db, $ID = null){
+        $this->db = $db;
         $this->ID = $ID;
         $this->dataSubmission = new DataSubmission();
         $this->__load();
@@ -31,7 +32,6 @@ class DataSubmissionRepo {
     
     protected function __load(){
         if($this->ID != null){
-            $this->db = DatabaseHandler::getInstance();
             $statement = $this->db->prepare("select * from datasubmission where id = :id");
             $statement->bindValue(":id", $this->ID, PDO::PARAM_INT);
             $statement->execute();
@@ -54,7 +54,6 @@ class DataSubmissionRepo {
     }
     
     protected function __save($dataSubmission){
-        $this->db = DatabaseHandler::getInstance();
         $statement = $this->db->prepare("insert into datasubmission values (0, :SourceVslaCode, :SourcePhoneImei, :SourceNetworkOperator, :SourceNetworkType, :SubmissionTimestamp, :Data, :ProcessedFlag)");
         $statement->bindValue(":SourceVslaCode", $dataSubmission->getSourceVslaCode(), PDO::PARAM_STR);
         $statement->bindValue(":SourcePhoneImei", $dataSubmission->getSourcePhoneImei(), PDO::PARAM_STR);
@@ -68,7 +67,6 @@ class DataSubmissionRepo {
     }
     
     public function __getIdAtIndex($index){
-        $this->db = DatabaseHandler::getInstance();
         $statement = $this->db->prepare("select id from datasubmission where ProcessedFlag = 0 order by id limit :index, 1");
         $statement->bindValue(":index", $index, PDO::PARAM_INT);
         $statement->execute();
@@ -78,7 +76,6 @@ class DataSubmissionRepo {
     
     public function updateProcessedFlag($boolean = false){
 //        $processedFlag = $boolean == false ? 0 : 1;
-        $this->db = DatabaseHandler::getInstance();
         $statement = $this->db->prepare("update datasubmission set ProcessedFlag = 1 where id = :id");
 //        $statement->bindValue(":ProcessedFlag", 1, PDO::PARAM_INT);
         $statement->bindValue(":id", $this->ID, PDO::PARAM_INT);
@@ -86,24 +83,23 @@ class DataSubmissionRepo {
         return $statement->rowCount();
     }
     
-    public static function getIdAtIndex($index=0){
-        return (new DataSubmissionRepo())->__getIdAtIndex($index);
+    public static function getIdAtIndex($db, $index=0){
+        return (new DataSubmissionRepo($db))->__getIdAtIndex($index);
     }
     
     protected function __getCountOfUnproccessedDataSubmissions(){
-        $this->db = DatabaseHandler::getInstance();
         $statement = $this->db->prepare("select count(*) as TotalNumber from datasubmission where ProcessedFlag = 0");
         $statement->execute();
         $object = $statement->fetch(PDO::FETCH_ASSOC);
         return $object == false ? 0 : $object["TotalNumber"];
     }
     
-    public static function getCountOfUnProcessedDataSubmissions(){
-        return (new DataSubmissionRepo())->__getCountOfUnproccessedDataSubmissions();
+    public static function getCountOfUnProcessedDataSubmissions($db){
+        return (new DataSubmissionRepo($db))->__getCountOfUnproccessedDataSubmissions();
     }
     
-    public static function save($dataSubmission){
-        return (new DataSubmissionRepo())->__save($dataSubmission);
+    public static function save($db, $dataSubmission){
+        return (new DataSubmissionRepo($db))->__save($dataSubmission);
     }
     
 }

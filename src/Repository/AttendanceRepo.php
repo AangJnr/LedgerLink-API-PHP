@@ -25,9 +25,9 @@ class AttendanceRepo {
     protected $attendance;
     var $db;
     
-    public function __construct($ID = null){
+    public function __construct($db, $ID = null){
         $this->ID = $ID;
-        $this->db = DatabaseHandler::getInstance();
+        $this->db = $db;
         $this->attendance = new Attendance();
         $this->__load();
     }
@@ -89,11 +89,7 @@ class AttendanceRepo {
         $statement->bindValue(":IsPresent", $attendance->getIsPresent() == null ? NULL : $attendance->getIsPresent(), PDO::PARAM_INT);
         $statement->bindValue(":Meeting_id", $attendance->getMeeting()->getID(), PDO::PARAM_INT);
         $statement->bindValue(":Member_id", $attendance->getMember()->getID(), PDO::PARAM_INT);
-        try{
-            $statement->execute();
-        }catch(Exception $e){
-            var_dump($e->getMessage());
-        }
+        $statement->execute();
         return $this->db->lastInsertId();
     }
     
@@ -114,7 +110,7 @@ class AttendanceRepo {
         return $statement->rowCount();
     }
     
-    public static function save($attendance){
-        return (new AttendanceRepo())->__save($attendance);
+    public static function save($db, $attendance){
+        return (new AttendanceRepo($db))->__save($attendance);
     }
 }

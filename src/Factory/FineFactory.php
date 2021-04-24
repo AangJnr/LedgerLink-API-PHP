@@ -23,10 +23,12 @@ class FineFactory {
     //put your code here
     protected $fineInfo;
     protected $meetingInfo;
+    protected $db;
     
-    protected function __construct($fineInfo, $meetingInfo){
+    protected function __construct($db, $fineInfo, $meetingInfo){
         $this->fineInfo = $fineInfo;
         $this->meetingInfo = $meetingInfo;
+        $this->db = $db;
     }
     
     protected function __process($targetVsla){
@@ -39,62 +41,68 @@ class FineFactory {
                     $fine->setFineIdEx($fineData["FineId"]);
                 }
                 if(array_key_exists("MemberId", $fineData)){
-                    $memberId = MemberRepo::getIDByMemberIdEx($targetVsla->getID(), $fineData["MemberId"]);
+                    $memberId = MemberRepo::getIDByMemberIdEx($this->db, $targetVsla->getID(), $fineData["MemberId"]);
                     if($memberId != null){
-                        $member = (new MemberRepo($memberId))->getMember();
+                        $member = (new MemberRepo($this->db, $memberId))->getMember();
                         $fine->setMember($member);
-                    }
-                }
-                if(array_key_exists("Amount", $fineData)){
-                    $fine->setAmount($fineData["Amount"]);
-                }
-                if(array_key_exists("FineTypeId", $fineData)){
-                    $fine->setFineTypeId($fineData["FineTypeId"]);
-                }
-                if(array_key_exists("DateCleared", $fineData)){
-                    $fine->setDateCleared($fineData["DateCleared"]);
-                }
-                if(array_key_exists("IsCleared", $fineData)){
-                    if($fineData["IsCleared"]){
-                        $fine->setIsCleared(1);
-                    }else{
-                        $fine->setIsCleared(0);
-                    }
-                }
-                if(array_key_exists("PaidInMeetingId", $fineData)){
-                    $fine->setPaidInMeetingIdEx($fineData["PaidInMeetingId"]);
-                    if(array_key_exists("CycleId", $this->meetingInfo)){
-                        $vslaCycleId = VslaCycleRepo::getIDByCycleIdEx($targetVsla->getID(), $this->meetingInfo["CycleId"]);
-                        if($vslaCycleId != null){
-                            $paidInMeetingId = MeetingRepo::getIDByMeetingIDEx($vslaCycleId, $fineData["PaidInMeetingId"]);
-                            $paidInMeeting = (new MeetingRepo($paidInMeetingId))->getMeeting();
-                            $fine->setPaidInMeeting($paidInMeeting);
+                        
+                        if(array_key_exists("Amount", $fineData)){
+                            $fine->setAmount($fineData["Amount"]);
+                        }
+                        if(array_key_exists("FineTypeId", $fineData)){
+                            $fine->setFineTypeId($fineData["FineTypeId"]);
+                        }
+                        if(array_key_exists("DateCleared", $fineData)){
+                            $fine->setDateCleared($fineData["DateCleared"]);
+                        }
+                        if(array_key_exists("IsCleared", $fineData)){
+                            if($fineData["IsCleared"]){
+                                $fine->setIsCleared(1);
+                            }else{
+                                $fine->setIsCleared(0);
+                            }
+                        }
+                        if(array_key_exists("PaidInMeetingId", $fineData)){
+                            $fine->setPaidInMeetingIdEx($fineData["PaidInMeetingId"]);
+                            if(array_key_exists("CycleId", $this->meetingInfo)){
+                                $vslaCycleId = VslaCycleRepo::getIDByCycleIdEx($this->db, $targetVsla->getID(), $this->meetingInfo["CycleId"]);
+                                if($vslaCycleId != null){
+                                    $paidInMeetingId = MeetingRepo::getIDByMeetingIDEx($this->db, $vslaCycleId, $fineData["PaidInMeetingId"]);
+                                    if($paidInMeetingId != null){
+                                        $paidInMeeting = (new MeetingRepo($this->db, $paidInMeetingId))->getMeeting();
+                                        $fine->setPaidInMeeting($paidInMeeting);
+                                    }
+                                }
+                            }
+                        }
+                        if(array_key_exists("MeetingId", $fineData)){
+                            $fine->setIssuedInMeetingIdEx($fineData["MeetingId"]);
+                            if(array_key_exists("CycleId", $this->meetingInfo)){
+                                $vslaCycleId = VslaCycleRepo::getIDByCycleIdEx($this->db, $targetVsla->getID(), $this->meetingInfo["CycleId"]);
+                                if($vslaCycleId != null){
+                                    $issuedInMeetingId = MeetingRepo::getIDByMeetingIDEx($this->db, $vslaCycleId, $fineData["MeetingId"]);
+                                    if($issuedInMeetingId != null){
+                                        $issuedInMeeting = (new MeetingRepo($this->db, $issuedInMeetingId))->getMeeting();
+                                        $fine->setIssuedInMeeting($issuedInMeeting);
+                                    }
+                                }
+                            }
+                        }
+                        if(FineRepo::save($this->db, $fine) > -1){
+                            $index++;
                         }
                     }
                 }
-                if(array_key_exists("MeetingId", $fineData)){
-                    $fine->setIssuedInMeetingIdEx($fineData["MeetingId"]);
-                    if(array_key_exists("CycleId", $this->meetingInfo)){
-                        $vslaCycleId = VslaCycleRepo::getIDByCycleIdEx($targetVsla->getID(), $this->meetingInfo["CycleId"]);
-                        if($vslaCycleId != null){
-                            $issuedInMeetingId = MeetingRepo::getIDByMeetingIDEx($vslaCycleId, $fineData["MeetingId"]);
-                            $issuedInMeeting = (new MeetingRepo($issuedInMeetingId))->getMeeting();
-                            $fine->setIssuedInMeeting($issuedInMeeting);
-                        }
-                    }
-                }
-                if(FineRepo::save($fine) > -1){
-                    $index++;
-                }
+
             }
-            if($index == count($this->fineInfo)){
+            if($index > 0){
                 return 1;
             }
         }
         return 0;
     }
     
-    public static function process($fineInfo, $meetingInfo, $targetVsla){
-        return (new FineFactory($fineInfo, $meetingInfo))->__process($targetVsla);
+    public static function process($db, $fineInfo, $meetingInfo, $targetVsla){
+        return (new FineFactory($db, $fineInfo, $meetingInfo))->__process($targetVsla);
     }
 }

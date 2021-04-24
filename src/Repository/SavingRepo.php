@@ -25,9 +25,9 @@ class SavingRepo {
     protected $saving;
     var $db;
     
-    public function __construct($ID = null){
+    public function __construct($db, $ID = null){
         $this->ID = $ID;
-        $this->db = DatabaseHandler::getInstance();
+        $this->db = $db;
         $this->saving = new Saving();
         $this->__load();
     }
@@ -101,7 +101,7 @@ class SavingRepo {
         return $statement->rowCount();
     }
     
-    public static function save($saving){
-        return (new SavingRepo())->__save($saving);
+    public static function save($db, $saving){
+        return (new SavingRepo($db))->__save($saving);
     }
 }

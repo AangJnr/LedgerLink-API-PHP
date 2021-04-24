@@ -26,9 +26,9 @@ class VslaCycleRepo {
     protected $vslaCycle;
     var $db;
     
-    public function __construct($ID = null){
+    public function __construct($db, $ID = null){
         $this->ID = $ID;
-        $this->db = DatabaseHandler::getInstance();
+        $this->db = $db;
         $this->vslaCycle = new VslaCycle();
         $this->__load();
     }
@@ -64,8 +64,8 @@ class VslaCycleRepo {
         return $this->vslaCycle;
     }
     
-    public static function getIDByCycleIdEx($vslaId, $cycleIdEx){
-        return (new VslaCycleRepo())->__getIDByCycleIdEx($vslaId, $cycleIdEx);
+    public static function getIDByCycleIdEx($db, $vslaId, $cycleIdEx){
+        return (new VslaCycleRepo($db))->__getIDByCycleIdEx($vslaId, $cycleIdEx);
     }
     
     protected function __getIDByCycleIdEx($vslaId, $cycleIdEx){
@@ -146,7 +146,7 @@ class VslaCycleRepo {
         return -1;
     }
     
-    public static function save($vslaCycle){
-        return (new VslaCycleRepo())->__save($vslaCycle);
+    public static function save($db, $vslaCycle){
+        return (new VslaCycleRepo($db))->__save($vslaCycle);
     }
 }

@@ -21,9 +21,11 @@ class VslaDbActivationFactory {
     //put your code here
     
     protected $submittedData;
+    protected $db;
     
-    protected function __construct($submittedData){
+    protected function __construct($db, $submittedData){
         $this->submittedData = $submittedData;
+        $this->db = $db;
     }
     
     protected function __process(){
@@ -52,16 +54,16 @@ class VslaDbActivationFactory {
             }
             $vslaDbActivation->setActivationDate(date("Y-m-d H:i:s"));
             $vslaDbActivation->setIsActive(1);
-            $isProcessed = VslaDbActivationRepo::save($vslaDbActivation);
+            $isProcessed = VslaDbActivationRepo::save($this->db, $vslaDbActivation);
         }
         return $isProcessed;
     }
     
-    public static function authenticate($vslaCode, $passKey){
-        return VslaDbActivationRepo::authenticate($vslaCode, $passKey);
+    public static function authenticate($db, $vslaCode, $passKey){
+        return VslaDbActivationRepo::authenticate($db, $vslaCode, $passKey);
     }
     
-    public static function process($submittedData){
-        return (new VslaDbActivationFactory($submittedData))->__process();
+    public static function process($db, $submittedData){
+        return (new VslaDbActivationFactory($db, $submittedData))->__process();
     }
 }

@@ -23,10 +23,12 @@ class SavingFactory {
     //put your code here
     protected $savingInfo;
     protected $meetingInfo;
+    protected $db;
     
-    protected function __construct($savingInfo, $meetingInfo){
+    protected function __construct($db, $savingInfo, $meetingInfo){
         $this->savingInfo = $savingInfo;
         $this->meetingInfo = $meetingInfo;
+        $this->db = $db;
     }
     
     protected function __process($targetVsla){
@@ -42,36 +44,37 @@ class SavingFactory {
                     $saving->setAmount($savingData["Amount"]);
                 }
                 if(array_key_exists("MemberId", $savingData)){
-                    $memberId = MemberRepo::getIDByMemberIdEx($targetVsla->getID(), $savingData["MemberId"]);
+                    $memberId = MemberRepo::getIDByMemberIdEx($this->db, $targetVsla->getID(), $savingData["MemberId"]);
                     if($memberId != null){
-                        $member = (new MemberRepo($memberId))->getMember();
+                        $member = (new MemberRepo($this->db, $memberId))->getMember();
                         $saving->setMember($member);
-                    }
-                }
-                if(is_array($this->meetingInfo)){
-                    if(array_key_exists("CycleId", $this->meetingInfo)){
-                        $vslaCycleId = VslaCycleRepo::getIDByCycleIdEx($targetVsla->getID(), $this->meetingInfo["CycleId"]);
-                        if($vslaCycleId != null){
-                            if(array_key_exists("MeetingId", $this->meetingInfo)){
-                                $meetingId = MeetingRepo::getIDByMeetingIDEx($vslaCycleId, $this->meetingInfo["MeetingId"]);
-                                $meeting = (new MeetingRepo($meetingId))->getMeeting();
-                                $saving->setMeeting($meeting);
+                        if(is_array($this->meetingInfo)){
+                            if(array_key_exists("CycleId", $this->meetingInfo)){
+                                $vslaCycleId = VslaCycleRepo::getIDByCycleIdEx($this->db, $targetVsla->getID(), $this->meetingInfo["CycleId"]);
+                                if($vslaCycleId != null){
+                                    if(array_key_exists("MeetingId", $this->meetingInfo)){
+                                        $meetingId = MeetingRepo::getIDByMeetingIDEx($this->db, $vslaCycleId, $this->meetingInfo["MeetingId"]);
+                                        $meeting = (new MeetingRepo($this->db, $meetingId))->getMeeting();
+                                        $saving->setMeeting($meeting);
+                                    }
+                                }
                             }
+                        }
+                        if(SavingRepo::save($this->db, $saving) > -1){
+                            $index++;
                         }
                     }
                 }
-                if(SavingRepo::save($saving) > -1){
-                    $index++;
-                }
+
             }
-            if($index == count($this->savingInfo)){
+            if($index > 0){
                 return 1;
             }
         }
         return 0;
     }
     
-    public static function process($savingInfo, $meetingInfo, $targetVsla){
-        return (new SavingFactory($savingInfo, $meetingInfo))->__process($targetVsla);
+    public static function process($db, $savingInfo, $meetingInfo, $targetVsla){
+        return (new SavingFactory($db, $savingInfo, $meetingInfo))->__process($targetVsla);
     }
 }

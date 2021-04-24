@@ -24,10 +24,12 @@ class WelfareFactory {
     //put your code here
     protected $welfareInfo;
     protected $meetingInfo;
+    protected $db;
     
-    protected function __construct($welfareInfo, $meetingInfo){
+    protected function __construct($db, $welfareInfo, $meetingInfo){
         $this->welfareInfo = $welfareInfo;
         $this->meetingInfo = $meetingInfo;
+        $this->db = $db;
     }
     
     protected function __process($targetVsla){
@@ -36,43 +38,45 @@ class WelfareFactory {
             for($i = 0; $i < count($this->welfareInfo); $i++){
                 $welfareData = $this->welfareInfo[$i];
                 $welfare = new Welfare();
-                if(array_key_exists("WelfareId", $welfareData)){
-                    $welfare->setWelfareIdEx($welfareData["WelfareId"]);
-                }
-                if(array_key_exists("Amount", $welfareData)){
-                    $welfare->setAmount($welfareData["Amount"]);
-                }
                 if(array_key_exists("MemberId", $welfareData)){
-                    $memberId = MemberRepo::getIDByMemberIdEx($targetVsla->getID(), $welfareData["MemberId"]);
+                    $memberId = MemberRepo::getIDByMemberIdEx($this->db, $targetVsla->getID(), $welfareData["MemberId"]);
                     if($memberId != null){
-                        $member = (new MemberRepo($memberId))->getMember();
+                        $member = (new MemberRepo($this->db, $memberId))->getMember();
                         $welfare->setMember($member);
-                    }
-                }
-                if(is_array($this->meetingInfo)){
-                    if(array_key_exists("CycleId", $this->meetingInfo)){
-                        $vslaCycleId = VslaCycleRepo::getIDByCycleIdEx($targetVsla->getID(), $this->meetingInfo["CycleId"]);
-                        if($vslaCycleId != null){
-                            if(array_key_exists("MeetingId", $this->meetingInfo)){
-                                $meetingId = MeetingRepo::getIDByMeetingIDEx($vslaCycleId, $this->meetingInfo["MeetingId"]);
-                                $meeting = (new MeetingRepo($meetingId))->getMeeting();
-                                $welfare->setMeeting($meeting);
+                        
+                        if(array_key_exists("WelfareId", $welfareData)){
+                            $welfare->setWelfareIdEx($welfareData["WelfareId"]);
+                        }
+                        if(array_key_exists("Amount", $welfareData)){
+                            $welfare->setAmount($welfareData["Amount"]);
+                        }
+
+                        if(is_array($this->meetingInfo)){
+                            if(array_key_exists("CycleId", $this->meetingInfo)){
+                                $vslaCycleId = VslaCycleRepo::getIDByCycleIdEx($this->db, $targetVsla->getID(), $this->meetingInfo["CycleId"]);
+                                if($vslaCycleId != null){
+                                    if(array_key_exists("MeetingId", $this->meetingInfo)){
+                                        $meetingId = MeetingRepo::getIDByMeetingIDEx($this->db, $vslaCycleId, $this->meetingInfo["MeetingId"]);
+                                        $meeting = (new MeetingRepo($this->db, $meetingId))->getMeeting();
+                                        $welfare->setMeeting($meeting);
+                                    }
+                                }
                             }
+                        }
+                        if(WelfareRepo::save($this->db, $welfare) > -1){
+                            $index++;
                         }
                     }
                 }
-                if(WelfareRepo::save($welfare) > -1){
-                    $index++;
-                }
             }
-            if($index == count($this->welfareInfo)){
+            if($index > 0){
                 return 1;
             }
         }
         return 0;
     }
     
-    public static function process($welfareInfo, $meetingInfo, $targetVsla){
-        return (new WelfareFactory($welfareInfo, $meetingInfo))->__process($targetVsla);
+    public static function process($db, $welfareInfo, $meetingInfo, $targetVsla){
+        return (new WelfareFactory($db, $welfareInfo, $meetingInfo))->__process($targetVsla);
     }
 }

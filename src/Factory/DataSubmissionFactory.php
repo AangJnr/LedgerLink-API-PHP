@@ -20,8 +20,10 @@ class DataSubmissionFactory {
     //put your code here
     protected $headerInfo;
     protected $dataSubmission;
+    protected $db;
     
-    protected function __construct($headerInfo){
+    protected function __construct($db, $headerInfo){
+        $this->db = $db;
         $this->headerInfo = $headerInfo;
         $this->dataSubmission = new DataSubmission();
     }
@@ -44,12 +46,12 @@ class DataSubmissionFactory {
             $this->dataSubmission->setData($jsonString);
             $this->dataSubmission->setSubmissionTimestamp(date("Y-m-d H:i:s"));
             $this->dataSubmission->setProcessedFlag(0);
-            $result = DataSubmissionRepo::save($this->dataSubmission);
+            $result = DataSubmissionRepo::save($this->db, $this->dataSubmission);
         }
         return $result;
     }
     
-    public static function process($headerInfo, $jsonString){
-        return (new DataSubmissionFactory($headerInfo))->__process($jsonString);
+    public static function process($db, $headerInfo, $jsonString){
+        return (new DataSubmissionFactory($db, $headerInfo))->__process($jsonString);
     }
 }

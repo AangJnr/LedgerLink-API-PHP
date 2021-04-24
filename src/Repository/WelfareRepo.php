@@ -27,9 +27,9 @@ class WelfareRepo {
     protected $welfare;
     var $db;
     
-    public function __construct($ID = null){
+    public function __construct($db, $ID = null){
         $this->ID = $ID;
-        $this->db = DatabaseHandler::getInstance();
+        $this->db = $db;
         $this->welfare = new Welfare();
         $this->__load();
     }
@@ -107,7 +107,7 @@ class WelfareRepo {
         return $statement->rowCount();
     }
     
-    public static function save($welfare){
-        return (new WelfareRepo())->__save($welfare);
+    public static function save($db, $welfare){
+        return (new WelfareRepo($db))->__save($welfare);
     }
 }

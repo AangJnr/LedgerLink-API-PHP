@@ -26,9 +26,9 @@ class LoanIssueRepo {
     protected $loanIssue;
     var $db;
     
-    public function __construct($ID = null){
+    public function __construct($db, $ID = null){
         $this->ID = $ID;
-        $this->db = DatabaseHandler::getInstance();
+        $this->db = $db;
         $this->loanIssue = new LoanIssue();
         $this->__load();
     }
@@ -152,11 +152,24 @@ class LoanIssueRepo {
         return $object == false ? null : $object["id"];
     }
     
-    public static function getIDFromLoanIdEx($meetingId, $loanIdEx){
-        return (new LoanIssueRepo())->__getIDFromLoanIdEx($meetingId, $loanIdEx);
+    protected function __getIDFromVslaIdAndLoanIdEx($vslaId, $loanIdEx){
+        $statement = $this->db->prepare("select a.id from loanissue as a inner join meeting as b on b.id = a.Meeting_id where a.LoanIdEx = :LoanIdEx and b.VslaCycle_id = :VslaCycle_id");
+        $statement->bindValue(":LoanIdEx", $loanIdEx, PDO::PARAM_INT);
+        $statement->bindValue(":VslaCycle_id", $vslaId, PDO::PARAM_INT);
+        $statement->execute();
+        $object = $statement->fetch(PDO::FETCH_ASSOC);
+        return $object == false ? null : $object["id"];
     }
     
-    public static function save($loanIssue){
-        return (new LoanIssueRepo())->__save($loanIssue);
+    public static function getIDFromVslaIdAndLoanIdEx($db, $vslaId, $loanIdEx){
+        return (new LoanIssueRepo($db))->__getIDFromVslaIdAndLoanIdEx($vslaId, $loanIdEx);
+    }
+    
+    public static function getIDFromLoanIdEx($db, $meetingId, $loanIdEx){
+        return (new LoanIssueRepo($db))->__getIDFromLoanIdEx($meetingId, $loanIdEx);
+    }
+    
+    public static function save($db, $loanIssue){
+        return (new LoanIssueRepo($db))->__save($loanIssue);
     }
 }

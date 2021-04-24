@@ -24,10 +24,10 @@ class VslaDbActivationRepo {
     protected $vslaDbActivation;
     var $db;
     
-    public function __construct($ID = null){
+    public function __construct($db, $ID = null){
         $this->ID = $ID;
         $this->vslaDbActivation = new VslaDbActivation();
-        $this->db = DatabaseHandler::getInstance();
+        $this->db = $db;
         $this->__load();
     }
     
@@ -66,12 +66,12 @@ class VslaDbActivationRepo {
         return $vslaCode == $object["VslaCode"] && $passKey == $object["PassKey"] ? $object["id"] : null;
     }
     
-    public static function authenticate($vslaCode, $passKey){
-        return (new VslaDbActivationRepo())->__authenticate($vslaCode, $passKey);
+    public static function authenticate($db, $vslaCode, $passKey){
+        return (new VslaDbActivationRepo($db))->__authenticate($vslaCode, $passKey);
     }
     
-    public static function save($vslaDbActivation){
-        return (new VslaDbActivationRepo())->__save($vslaDbActivation);
+    public static function save($db, $vslaDbActivation){
+        return (new VslaDbActivationRepo($db))->__save($vslaDbActivation);
     }
     
     protected function __save($vslaDbActivation){

@@ -20,10 +20,12 @@ class VslaCycleFactory {
     //put your code here
     protected $vslaCycleInfo;
     protected $vslaCycle;
+    protected $db;
     
-    protected function __construct($vslaCycleInfo){
+    protected function __construct($db, $vslaCycleInfo){
         $this->vslaCycleInfo = $vslaCycleInfo;
         $this->vslaCycle = new VslaCycle();
+        $this->db = $db;
     }
     
     protected function __process($targetVsla){
@@ -51,12 +53,12 @@ class VslaCycleFactory {
             }
             $this->vslaCycle->setVsla($targetVsla);
             //ToDo migrate interest is not getting captured
-            return VslaCycleRepo::save($this->vslaCycle);
+            return VslaCycleRepo::save($this->db, $this->vslaCycle);
         }
         return -1;
     }
     
-    public static function process($vslaCycleInfo, $targetVsla){
-        return (new VslaCycleFactory($vslaCycleInfo))->__process($targetVsla);
+    public static function process($db, $vslaCycleInfo, $targetVsla){
+        return (new VslaCycleFactory($db, $vslaCycleInfo))->__process($targetVsla);
     }
 }
