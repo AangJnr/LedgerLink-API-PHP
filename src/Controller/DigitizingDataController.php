@@ -68,7 +68,7 @@ class DigitizingDataController extends AppController {
             $dataSubmission = $dataSubmissionRepo->getDataSubmission();
             $jsonString = "{\"FileSubmission\":[".$dataSubmission->getData()."]}";
             
-            $this->__processSubmittedRecords($db, $jsonString);
+            $this->__processSubmittedRecords($db, $jsonString, $dataSubmissionRepo);
             
         }
         
@@ -79,7 +79,7 @@ class DigitizingDataController extends AppController {
         return VslaDbActivationFactory::authenticate($vslaCode, $passKey) != null ? true : false;
     }
     
-    protected function __processSubmittedRecords($db, $jsonString){
+    protected function __processSubmittedRecords($db, $jsonString, $dataSubmissionRepo = null){
         if(strlen($jsonString) > 0){
             $submittedData= json_decode($jsonString, true);
             if(is_array($submittedData)){
@@ -148,6 +148,9 @@ class DigitizingDataController extends AppController {
                                                                     }else{
                                                                         $this->set("jsonData", "Fines Not Processed");
                                                                     }
+                                                                }
+                                                                if($dataSubmissionRepo != null){
+                                                                    $dataSubmissionRepo->updateProcessedFlag(true);
                                                                 }
                                                                 array_push($jsonResponse, array("StatusCode" => "0", "MeetingId" => "{$fileSubmission["MeetingInfo"]["MeetingId"]}", "SavedRecord" => "True", "Authenticated" => "True"));
                                                             }
