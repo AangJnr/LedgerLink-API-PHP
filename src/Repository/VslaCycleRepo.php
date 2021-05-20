@@ -99,6 +99,42 @@ class VslaCycleRepo {
         return $this->db->lastInsertId();
     }
     
+    protected function __getCurrentCycleID($vslaID){
+        $statement = $this->db->prepare("select id from vslacycle where Vsla_id = :Vsla_id order by CycleIdEx, id desc limit 0, 1");
+        $statement->bindValue(":Vsla_id", $vslaID, PDO::PARAM_INT);
+        $statement->execute();
+        $object = $statement->fetch(PDO::FETCH_ASSOC);
+        return $object == false ? null : $object["id"];
+    }
+    
+    protected function __getPreviousCycleID($vslaID){
+        $numberOfCycles = $this->getNumberOfCycles($vslaID);
+        if($numberOfCycles == false || $numberOfCycles == 1){
+            return 0;
+        }
+        $statement = $this->db->prepare("select id from vslacycle where Vsla_id = :Vsla_id order by CycleIdEx, id desc limit 1, 1");
+        $statement->bindValue(":Vsla_id", $vslaID, PDO::PARAM_INT);
+        $statement->execute();
+        $object = $statement->fetch(PDO::FETCH_ASSOC);
+        return $object == false ? null : $object["id"];
+    }
+    
+    public static function getPreviousCycleID($db, $vslaID){
+        return (new VslaCycleRepo($db))->__getPreviousCycleID($vslaID);
+    }
+    
+    public function getNumberOfCycles($vslaID){
+        $statement = $this->db->prepare("select count(id) NumberOfCycles from vslacycle where Vsla_id = :Vsla_id");
+        $statement->bindValue(":Vsla_id", $vslaID, PDO::PARAM_INT);
+        $statement->execute();
+        $object = $statement->fetch(PDO::FETCH_ASSOC);
+        return $object == false ? null : $object["NumberOfCycles"];
+    }
+    
+    public static function getCurrentCycleID($db, $vslaID){
+        return (new VslaCycleRepo($db))->__getCurrentCycleID($vslaID);
+    }
+    
     public function update($vslaCycle){
         $statement = $this->db->prepare("update vslacycle set CycleIdEx = :CycleIdEx, "
                 . "DateEnded = :DateEnded, "

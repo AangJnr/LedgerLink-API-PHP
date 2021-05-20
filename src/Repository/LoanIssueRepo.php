@@ -172,4 +172,62 @@ class LoanIssueRepo {
     public static function save($db, $loanIssue){
         return (new LoanIssueRepo($db))->__save($loanIssue);
     }
+    
+    protected function __getLoanFundUtilization($cycleID){
+        $statement = $this->db->prepare("select round((DisbursedAmount/TotalSavings), 2) LoanFundUtilization from
+                                        (
+                                                select SUM(a.PrincipalAmount) DisbursedAmount, v.VslaCode from loanissue a
+                                                inner join meeting m on a.Meeting_id = m.id
+                                                inner join vslacycle vc on m.VslaCycle_id = vc.id
+                                            inner join vsla v on vc.Vsla_id = v.id
+                                                where vc.id = :id
+                                        ) as ab
+                                        inner join
+                                        (
+                                                select SUM(a.Amount) TotalSavings, v.VslaCode from saving a 
+                                            inner join meeting m on a.Meeting_id = m.id
+                                                inner join vslacycle vc on m.VslaCycle_id = vc.id
+                                            inner join vsla v on vc.Vsla_id = v.id
+                                                where vc.id = id 
+                                        ) as bc
+                                        on ab.VslaCode = bc.VslaCode");
+        $statement->bindValue(":id", $cycleID, PDO::PARAM_INT);
+        $statement->execute();
+        $object = $statement->fetch(PDO::FETCH_ASSOC);
+        return $object == false ? null : $object["LoanFundUtilization"];
+    }
+    
+    public static function getLoanFundUtilization($db, $cycleID){
+        return (new LoanIssueRepo($db))->__getLoanFundUtilization($cycleID);
+    }
+    
+    protected function __getPercentageOfMembersWithActiveLoan($vslaID, $cycleID){
+        $statement = $this->db->prepare("select round((ba.MembersTakenLoans/bb.NumberofMembers), 2) PercentageOfMembersWithActiveLoans from
+                                        (
+                                                select count(ab.Member_id) as MembersTakenLoans, '1' as id 
+                                                from
+                                                (
+                                                        select distinct a.Member_id as Member_id from loanissue a
+                                                        inner join meeting m on a.Meeting_id = m.id
+                                                        inner join vslacycle vc on m.VslaCycle_id = vc.id
+                                                        where vc.id = :cycleID and a.Balance > 0
+                                                ) as ab
+                                        ) as ba
+                                        inner join
+                                        (
+                                                select count(m.id) as NumberOfMembers, '1' as id from ledgerlink.member m
+                                                inner join vsla v on m.Vsla_id = v.id
+                                                where v.id = :vslaID and m.MemberNo != 0
+                                        ) as bb
+                                        on bb.id = ba.id");
+        $statement->bindValue(":cycleID", $cycleID, PDO::PARAM_INT);
+        $statement->bindValue(":vslaID", $vslaID, PDO::PARAM_INT);
+        $statement->execute();
+        $object = $statement->fetch(PDO::FETCH_ASSOC);
+        return $object == false ? null : $object["PercentageOfMembersWithActiveLoans"];
+    }
+    
+    public static function getPercentageOfMembersWithActiveLoan($db, $vslaID, $cycleID){
+        return (new LoanIssueRepo($db))->__getPercentageOfMembersWithActiveLoan($vslaID, $cycleID);
+    }
 }

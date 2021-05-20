@@ -104,4 +104,20 @@ class SavingRepo {
     public static function save($db, $saving){
         return (new SavingRepo($db))->__save($saving);
     }
+    
+    protected function __getVolumeOfSavingsInCycle($cycleID){
+        $statement = $this->db->prepare("select sum(s.Amount) as TotalSavings from saving s
+                                        inner join meeting m on s.Meeting_id = m.id
+                                        inner join vslacycle vc on m.VslaCycle_id = vc.id
+                                        where vc.id = :id");
+        $statement->bindValue(":id", $cycleID, PDO::PARAM_INT);
+        $statement->execute();
+        $object = $statement->fetch(PDO::FETCH_ASSOC);
+        return $object == false ? null : $object["TotalSavings"];
+    }
+    
+    
+    public static function getVolumeOfSavingsInCycle($db, $cycleID){
+        return (new SavingRepo($db))->__getVolumeOfSavingsInCycle($cycleID);
+    }
 }

@@ -113,4 +113,40 @@ class AttendanceRepo {
     public static function save($db, $attendance){
         return (new AttendanceRepo($db))->__save($attendance);
     }
+    
+    protected function __getAttendanceRate($cycleID){
+        $statement = $this->db->prepare("select round((Present/(MeetingsHeld*NumberOfMembers)), 2) as AttendanceRate from 
+                                        (
+                                        select SUM(a.IsPresent) Present, v.VslaName, v.VslaCode from attendance a 
+                                        inner join meeting m on a.Meeting_id = m.id inner join vslacycle vc on m.VslaCycle_id = vc.id
+                                        inner join vsla v on v.id = vc.Vsla_id where vc.id = :id
+                                        ) as ab
+
+                                        inner join
+                                        (
+                                        select count(m.id) MeetingsHeld, v.VslaCode from meeting m 
+                                        inner join vslacycle vc on m.VslaCycle_id = vc.id 
+                                        inner join vsla v on vc.Vsla_id = v.id where vc.id = :id
+                                        )
+                                        as ac
+                                        on ab.VslaCode = ac.VslaCode
+
+                                        inner join 
+                                        (
+                                        select count(m.id) NumberOfMembers, v.VslaCode from ledgerlink.member m 
+                                        inner join vsla v on m.Vsla_id = v.id 
+                                        inner join vslacycle vc on vc.Vsla_id = v.id
+                                        where m.MemberNo != 0 and vc.id = :id
+                                        )
+                                        as ad
+                                        on ac.VslaCode = ad.VslaCode");
+        $statement->bindValue(":id", $cycleID, PDO::PARAM_INT);
+        $statement->execute();
+        $object = $statement->fetch(PDO::FETCH_ASSOC);
+        return $object == false ? null : $object["AttendanceRate"];
+    }
+    
+    public static function getAttendanceRate($db, $cycleID){
+        return (new AttendanceRepo($db))->__getAttendanceRate($cycleID);
+    }
 }

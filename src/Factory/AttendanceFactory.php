@@ -24,7 +24,7 @@ class AttendanceFactory {
     protected $meetingInfo;
     protected $db;
     
-    protected function __construct($db, $attendanceInfo, $meetingInfo){
+    protected function __construct($db, $attendanceInfo = null, $meetingInfo = null){
         $this->attendanceInfo = $attendanceInfo;
         $this->meetingInfo = $meetingInfo;
         $this->db = $db;
@@ -79,5 +79,9 @@ class AttendanceFactory {
     
     public static function process($db, $attendanceInfo, $meetingInfo, $targetVsla){
         return (new AttendanceFactory($db, $attendanceInfo, $meetingInfo))->__process($targetVsla);
+    }
+    
+    public static function getAttendanceRate($db, $cycleID){
+        return (new AttendanceFactory($db))->__getAttendanceRate($cycleID);
     }
 }
